@@ -89,8 +89,20 @@ var currentCategory = null;
 function getUsers() {
   return JSON.parse(localStorage.getItem('ijarabot_users') || '{}');
 }
-function saveUsers(u) {
+async function saveUsers(u) {
   localStorage.setItem('ijarabot_users', JSON.stringify(u));
+  try { await db.collection('rentify').doc('users').set({ list: u }); } catch(e) {}
+}
+async function syncUsersFromFirebase() {
+  try {
+    var snap = await db.collection('rentify').doc('users').get();
+    if (snap.exists) {
+      var data = snap.data().list || {};
+      localStorage.setItem('ijarabot_users', JSON.stringify(data));
+      return data;
+    }
+  } catch(e) {}
+  return JSON.parse(localStorage.getItem('ijarabot_users') || '{}');
 }
 
 function showLogin() {
@@ -574,8 +586,11 @@ function doResetPassword() {
 function checkSession() {
   var saved = localStorage.getItem('ijarabot_session');
   if (saved) {
-    var users = getUsers();
-    if (users[saved]) { loginSuccess(saved); return; }
+    syncUsersFromFirebase().then(function(users) {
+      if (users[saved]) { loginSuccess(saved); return; }
+      showLogin();
+    });
+    return;
   }
   showLogin();
 }
@@ -753,7 +768,33 @@ function getCategoryInfo(categoryKey) {
 }
 
 function initApp() {
-  rentals = JSON.parse(localStorage.getItem(DB_PREFIX + 'rentals') || '[]');
+  // Firebase dan yuklash
+  db.collection('shops').doc(currentUser).collection('data').doc('rentals').get()
+    .then(function(snap) {
+      rentals = (snap.exists && snap.data().list) ? snap.data().list : JSON.parse(localStorage.getItem(DB_PREFIX + 'rentals') || '[]');
+      rentals = migrateExistingRentals(rentals);
+      localStorage.setItem(DB_PREFIX + 'rentals', JSON.stringify(rentals));
+    }).catch(function() {
+      rentals = JSON.parse(localStorage.getItem(DB_PREFIX + 'rentals') || '[]');
+      rentals = migrateExistingRentals(rentals);
+    });
+
+  db.collection('shops').doc(currentUser).collection('data').doc('tools').get()
+    .then(function(snap) {
+      if (snap.exists && snap.data().list) {
+        tools = snap.data().list;
+        localStorage.setItem(DB_PREFIX + 'tools', JSON.stringify(tools));
+      }
+    }).catch(function(){});
+
+  db.collection('shops').doc(currentUser).collection('data').doc('items').get()
+    .then(function(snap) {
+      if (snap.exists && snap.data().list) {
+        items = snap.data().list;
+        localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(items));
+      }
+    }).catch(function(){});
+
   workers = JSON.parse(localStorage.getItem(DB_PREFIX + 'workers') || '[]');
   if (workers.length === 0) {
     workers = ['Xodim 1','Xodim 2','Xodim 3','Xodim 4','Xodim 5'];
@@ -764,7 +805,6 @@ function initApp() {
   if (currentCategory === 'tools') {
     tools = JSON.parse(localStorage.getItem(DB_PREFIX + 'tools') || '[]');
   }
-  rentals = migrateExistingRentals(rentals);
   updateNavLabels(currentCategory);
 
   // Rasmlarni IDB dan yuklab, keyin render qilish
@@ -823,7 +863,13 @@ var editToolId = null;
 var editItemId = null;
 var returnId   = null;
 
-function saveTools()   { try { localStorage.setItem(DB_PREFIX + 'tools',   JSON.stringify(tools)); } catch(e) { showToast && showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); } }
+function saveTools() {
+  try {
+    localStorage.setItem(DB_PREFIX + 'tools', JSON.stringify(tools));
+    db.collection('shops').doc(currentUser).collection('data').doc('tools')
+      .set({ list: tools }).catch(function(e){ console.warn('FB tools:', e); });
+  } catch(e) { showToast && showToast("Xotira to'lib qoldi...", 'error'); }
+}
 function saveItems() {
   try {
     // Rasmlarni IDB ga saqlash, localStorage ga faqat matnli ma'lumotlar
@@ -839,6 +885,8 @@ function saveItems() {
       return copy;
     });
     localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(itemsNoImgs));
+    db.collection('shops').doc(currentUser).collection('data').doc('items')
+      .set({ list: itemsNoImgs }).catch(function(e){ console.warn('FB items:', e); });
     // IDB saqlash (background)
     Promise.all(imgPromises).catch(function(e) {
       console.warn('IDB saqlashda xato:', e);
@@ -847,7 +895,13 @@ function saveItems() {
     showToast && showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error');
   }
 }
-function saveRentals() { try { localStorage.setItem(DB_PREFIX + 'rentals', JSON.stringify(rentals)); } catch(e) { showToast && showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); } }
+function saveRentals() {
+  try {
+    localStorage.setItem(DB_PREFIX + 'rentals', JSON.stringify(rentals));
+    db.collection('shops').doc(currentUser).collection('data').doc('rentals')
+      .set({ list: rentals }).catch(function(e){ console.warn('FB rentals:', e); });
+  } catch(e) { showToast && showToast("Xotira to'lib qoldi...", 'error'); }
+}
 function saveWorkersData() { try { localStorage.setItem(DB_PREFIX + 'workers', JSON.stringify(workers)); } catch(e) {} }
 function fmt(n)        { return Number(n||0).toLocaleString('uz-UZ') + " so'm"; }
 function escHtml(s)    { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }

@@ -915,6 +915,20 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDT_D7qXJ8wwPpLPt0BqkmIwugAadFIamI",
+    authDomain: "rentify-8b7eb.firebaseapp.com",
+    projectId: "rentify-8b7eb",
+    storageBucket: "rentify-8b7eb.firebasestorage.app",
+    messagingSenderId: "984447754339",
+    appId: "1:984447754339:web:78bf5ecf3da9ed3220d856"
+  };
+  firebase.initializeApp(firebaseConfig);
+  window.db = firebase.firestore();
+</script>
 <script src="app.js"></script>
 <script src="ai-chat.js"></script>
 </div><!-- /app -->
