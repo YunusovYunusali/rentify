@@ -1,0 +1,1214 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rentify</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#242424; --border:#2e2e2e;
+  --accent:#f5a623; --text:#f0ede8; --muted:#888;
+  --green:#2ecc71; --red:#e74c3c; --blue:#3498db;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
+
+/* ===== HEADER ===== */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;}
+.logo span{color:var(--accent);}
+.header-stats{display:flex;gap:24px;}
+.hstat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);}
+.hstat strong{color:var(--text);font-family:'Syne',sans-serif;font-weight:700;}
+.dot{width:8px;height:8px;border-radius:50%;}
+.dot.green{background:var(--green);} .dot.amber{background:var(--accent);}
+.header-mobile{display:none;align-items:center;gap:12px;}
+.hm-active{font-size:13px;color:var(--muted);}
+.hm-active strong{color:var(--accent);font-family:'Syne',sans-serif;}
+
+/* ===== LAYOUT ===== */
+.container{display:flex;height:calc(100vh - 60px);}
+aside{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all 0.15s;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(245,166,35,0.06);}
+.nav-icon{font-size:16px;}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);padding:20px 20px 8px;text-transform:uppercase;}
+main{flex:1;overflow-y:auto;padding:28px 32px;}
+.page{display:none;} .page.active{display:block;}
+.page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:24px;}
+
+/* ===== STATS ===== */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
+.stat-value.amber{color:var(--accent);} .stat-value.green{color:var(--green);}
+.stat-value.red{color:var(--red);} .stat-value.blue{color:var(--blue);}
+
+/* ===== TABLE ===== */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.table-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+table{width:100%;border-collapse:collapse;}
+thead th{text-align:left;padding:12px 20px;font-size:11px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2);}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+td{padding:12px 20px;font-size:13px;vertical-align:middle;}
+.td-name{font-weight:500;} .td-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge.active{background:rgba(46,204,113,0.12);color:var(--green);}
+.badge.returned{background:rgba(52,152,219,0.12);color:var(--blue);}
+.badge.paid{background:rgba(46,204,113,0.12);color:var(--green);}
+.badge.unpaid{background:rgba(245,166,35,0.12);color:var(--accent);}
+.badge.available{background:rgba(46,204,113,0.12);color:var(--green);}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'DM Sans',sans-serif;min-height:44px;}
+.btn-primary{background:var(--accent);color:#000;} .btn-primary:hover{background:#e8a020;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);} .btn-ghost:hover{background:var(--surface2);}
+.btn-danger{background:rgba(231,76,60,0.15);color:var(--red);border:1px solid rgba(231,76,60,0.2);} .btn-danger:hover{background:rgba(231,76,60,0.25);}
+.btn-sm{padding:5px 10px;font-size:11px;min-height:32px;}
+
+/* ===== FORMS ===== */
+label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;width:100%;}
+input:focus,select:focus{border-color:var(--accent);}
+input.error,select.error{border-color:var(--red);}
+select option{background:var(--surface2);}
+.field-error{font-size:11px;color:var(--red);margin-top:2px;min-height:15px;display:block;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+
+/* ===== MODALS ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:640px;max-height:92vh;overflow-y:auto;}
+.modal-head{padding:18px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-head h3{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;}
+.modal-body{padding:20px 24px;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface);}
+.close-btn{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px;min-height:auto;}
+.close-btn:hover{color:var(--text);background:var(--surface2);}
+
+/* ===== TOOL PICKER ===== */
+.tool-picker{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.tool-picker-head{padding:10px 14px;background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.tool-picker-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--border);transition:background 0.1s;}
+.tool-picker-item:hover{background:var(--surface2);}
+.tool-picker-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:var(--accent);}
+.tool-picker-name{flex:1;font-size:13px;font-weight:500;}
+.tool-picker-rate{font-size:12px;color:var(--muted);margin-right:8px;}
+.tool-picker-qty{width:70px;padding:6px 10px;font-size:13px;}
+
+/* ===== PRICE TABLE ===== */
+.price-table{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:14px;}
+.price-table-row{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.price-table-row:last-child{border-bottom:none;background:rgba(245,166,35,0.06);}
+.price-table-label{color:var(--muted);}
+.price-table-val{font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);}
+.price-table-total{font-size:15px;}
+
+/* ===== TOOLS GRID ===== */
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;}
+.tool-card-top{display:flex;align-items:center;justify-content:space-between;}
+.tool-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;}
+.tool-rates{display:flex;gap:6px;flex-wrap:wrap;}
+.rate-pill{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--muted);}
+.rate-pill span{color:var(--accent);font-weight:600;}
+.tool-actions{display:flex;gap:6px;margin-top:2px;}
+
+/* ===== REPORT ===== */
+.report-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.report-card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;}
+.report-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.report-item:last-child{border-bottom:none;}
+.report-amount{font-weight:600;font-family:'Syne',sans-serif;}
+
+/* ===== SEARCH ===== */
+.search-row{display:flex;gap:10px;margin-bottom:14px;align-items:center;}
+.search-wrap{flex:1;position:relative;}
+.search-wrap input{padding-left:34px;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none;}
+
+/* ===== MISC ===== */
+.empty{text-align:center;padding:48px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.actions-cell{display:flex;gap:5px;}
+.items-list{font-size:12px;color:var(--muted);margin-top:2px;}
+.items-list span{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:1px 2px 1px 0;}
+
+/* ===== TOAST ===== */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.25s;pointer-events:none;max-width:320px;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.success{border-left:3px solid var(--green);}
+#toast.warning{border-left:3px solid var(--accent);}
+#toast.error{border-left:3px solid var(--red);}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;height:64px;}
+.bn-inner{display:flex;height:100%;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);transition:color 0.15s;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.bn-item.active{color:var(--accent);}
+.bn-icon{font-size:20px;line-height:1;}
+.bn-label{font-size:10px;font-weight:600;letter-spacing:0.3px;}
+
+/* ===== MOBILE CARDS ===== */
+.mobile-cards{display:none;}
+.rental-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.rc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.rc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;}
+.rc-phone{font-size:13px;color:var(--muted);margin-top:2px;}
+.rc-items{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.rc-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.rc-date{font-size:12px;color:var(--muted);}
+.rc-price{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.rc-price.accent{color:var(--accent);}
+.rc-price.green{color:var(--green);}
+.rc-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.rc-actions .btn{flex:1;justify-content:center;min-height:44px;}
+.rc-pay-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px;}
+.rc-pay-label{font-size:12px;color:var(--muted);}
+
+/* ===== MOBILE TOOL CARD ===== */
+.tool-card-mobile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.tcm-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.tcm-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.tcm-rates{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.tcm-actions{display:flex;gap:8px;}
+.tcm-actions .btn{flex:1;justify-content:center;}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  header{padding:0 16px;}
+  .header-stats{display:none;}
+  .header-mobile{display:flex;}
+
+  aside{display:none;}
+  .bottom-nav{display:block;}
+  .bn-inner{display:flex;}
+
+  .container{height:calc(100vh - 60px);}
+  main{padding:16px;padding-bottom:80px;}
+
+  .page-title{font-size:20px;}
+  .page-sub{font-size:12px;margin-bottom:16px;}
+
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  .stat-card{padding:14px 16px;}
+  .stat-value{font-size:22px;}
+  .stat-label{font-size:11px;}
+
+  .desktop-table{display:none !important;}
+  .mobile-cards{display:block;}
+
+  .tools-grid{grid-template-columns:1fr;}
+
+  .report-row{grid-template-columns:1fr;}
+
+  .search-row{flex-wrap:wrap;}
+  .search-row select{width:100%;}
+  .search-row .btn{width:100%;justify-content:center;}
+
+  .table-header{flex-direction:column;gap:10px;align-items:stretch;}
+  .table-header .btn{justify-content:center;}
+
+  /* Modal bottom sheet */
+  .modal-overlay{align-items:flex-end;}
+  .modal{width:100% !important;border-radius:20px 20px 0 0;max-height:90vh;}
+  .modal-head{border-radius:20px 20px 0 0;}
+
+  .form-row{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+
+  .tool-picker-item{flex-wrap:wrap;gap:8px;}
+  .tool-picker-qty{width:80px;}
+
+  #toast{bottom:80px;right:12px;left:12px;max-width:none;}
+}
+@media (min-width: 769px) {
+  .bottom-nav{display:none !important;}
+  .mobile-cards{display:none !important;}
+  .desktop-table{display:block;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Rent<span>ify</span></div>
+  <div class="header-stats">
+    <div class="hstat"><div class="dot green"></div> Faol: <strong id="h-active">0</strong></div>
+    <div class="hstat"><div class="dot amber"></div> To'lanmagan: <strong id="h-pending">0</strong></div>
+    <div class="hstat">Bugungi daromad: <strong id="h-income" style="color:var(--accent)">0 so'm</strong></div>
+  </div>
+  <div class="header-mobile">
+    <div class="hm-active">Faol: <strong id="hm-active">0</strong></div>
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="min-height:36px">+ Ijara</button>
+  </div>
+</header>
+
+<div class="container">
+  <aside>
+    <div class="nav-section">Asosiy</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">◈</span> Bosh sahifa</div>
+    <div class="nav-item" onclick="showPage('ijaralar',this)"><span class="nav-icon">⟳</span> Ijaralar</div>
+    <div class="nav-section">Katalog</div>
+    <div class="nav-item" onclick="showPage('asboblar',this)"><span class="nav-icon">⚙</span> Asboblar</div>
+    <div class="nav-section">Moliya</div>
+    <div class="nav-item" onclick="showPage('hisobot',this)"><span class="nav-icon">▦</span> Hisobot</div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-title">Bosh sahifa</div>
+      <div class="page-sub">Bugungi holat</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Faol ijaralar</div><div class="stat-value amber" id="stat-active">0</div></div>
+        <div class="stat-card"><div class="stat-label">Bugungi daromad</div><div class="stat-value green" id="stat-today">0 so'm</div></div>
+        <div class="stat-card"><div class="stat-label">To'lanmagan</div><div class="stat-value red" id="stat-unpaid">0 so'm</div></div>
+        <div class="stat-card"><div class="stat-label">Jami asboblar</div><div class="stat-value blue" id="stat-tools">0</div></div>
+      </div>
+
+      <!-- Desktop table -->
+      <div class="table-card desktop-table">
+        <div class="table-header">
+          <div class="table-title">Faol ijaralar</div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Yangi ijara</button>
+        </div>
+        <table>
+          <thead><tr><th>Mijoz</th><th>Asboblar</th><th>Boshlanish</th><th>Holat</th><th>Narx</th><th>To'lov</th><th>Amal</th></tr></thead>
+          <tbody id="dashboard-table"><tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div>Hali ijara yo'q</div></td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="mobile-cards">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px">Faol ijaralar</div>
+        </div>
+        <div id="dashboard-cards"></div>
+      </div>
+    </div>
+
+    <!-- IJARALAR -->
+    <div id="page-ijaralar" class="page">
+      <div class="page-title">Barcha ijaralar</div>
+      <div class="page-sub">Ijara tarixi va holatlari</div>
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-input" placeholder="Mijoz yoki asbob nomi..." oninput="renderAll()">
+        </div>
+        <select id="filter-status" onchange="renderAll()" style="width:150px">
+          <option value="">Barchasi</option>
+          <option value="active">Faol</option>
+          <option value="returned">Qaytarilgan</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Yangi ijara</button>
+      </div>
+
+      <!-- Desktop table -->
+      <div class="table-card desktop-table">
+        <table>
+          <thead><tr><th>Mijoz</th><th>Telefon</th><th>Asboblar</th><th>Boshlanish</th><th>Qaytarilgan</th><th>Holat</th><th>Narx</th><th>To'lov</th><th>Amal</th></tr></thead>
+          <tbody id="all-table"><tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div>Hali ijara yo'q</div></td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="mobile-cards" id="all-cards"></div>
+    </div>
+
+    <!-- ASBOBLAR -->
+    <div id="page-asboblar" class="page">
+      <div class="page-title">Asboblar katalogi</div>
+      <div class="page-sub">Ijaraga beriladigan asboblar ro'yxati</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="openToolModal()">+ Asbob qo'shish</button>
+      </div>
+      <!-- Desktop grid -->
+      <div class="tools-grid desktop-table" id="tools-grid">
+        <div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚙</div>Asbob qo'shilmagan</div>
+      </div>
+      <!-- Mobile cards -->
+      <div class="mobile-cards" id="tools-cards"></div>
+    </div>
+
+    <!-- HISOBOT -->
+    <div id="page-hisobot" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px">
+        <div class="page-title" style="margin-bottom:0">Moliyaviy hisobot</div>
+        <button class="btn btn-danger" onclick="resetReport()">&#8635; Hisobotni tozalash</button>
+      </div>
+      <div class="page-sub">Daromad va to'lovlar tahlili</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Jami daromad</div><div class="stat-value green" id="r-total">0 so'm</div></div>
+        <div class="stat-card"><div class="stat-label">To'langan</div><div class="stat-value blue" id="r-paid">0 so'm</div></div>
+        <div class="stat-card"><div class="stat-label">Qarzdorlik</div><div class="stat-value red" id="r-debt">0 so'm</div></div>
+        <div class="stat-card"><div class="stat-label">Jami ijaralar</div><div class="stat-value amber" id="r-count">0</div></div>
+      </div>
+      <div class="report-row">
+        <div class="report-card"><div class="report-card-title">Eng ko'p ijaralangan asboblar</div><div id="top-tools">—</div></div>
+        <div class="report-card"><div class="report-card-title">So'nggi to'lovlar</div><div id="recent-payments">—</div></div>
+      </div>
+      <div class="table-card" style="margin-top:4px">
+        <div class="table-header">
+          <div class="table-title">Oxirgi 7 kunlik hisobot</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Sana</th><th>Ijaralar</th><th>Qaytarilgan</th><th>Daromad</th><th>To'langan</th><th>Qarzdorlik</th></tr></thead>
+            <tbody id="weekly-table"><tr><td colspan="6"><div class="empty" style="padding:24px">Ma'lumot yo'q</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bn-inner">
+    <button class="bn-item active" onclick="showPage('dashboard',this)" id="bn-dashboard">
+      <span class="bn-icon">◈</span><span class="bn-label">Bosh</span>
+    </button>
+    <button class="bn-item" onclick="showPage('ijaralar',this)" id="bn-ijaralar">
+      <span class="bn-icon">⟳</span><span class="bn-label">Ijaralar</span>
+    </button>
+    <button class="bn-item" onclick="showPage('asboblar',this)" id="bn-asboblar">
+      <span class="bn-icon">⚙</span><span class="bn-label">Asboblar</span>
+    </button>
+    <button class="bn-item" onclick="showPage('hisobot',this)" id="bn-hisobot">
+      <span class="bn-icon">▦</span><span class="bn-label">Hisobot</span>
+    </button>
+  </div>
+</nav>
+
+<!-- IJARA MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-title">Yangi ijara</h3>
+      <button class="close-btn" onclick="closeModal('add-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mijoz ismi</label>
+          <input type="text" id="f-name" placeholder="To'liq ism">
+          <span class="field-error" id="err-name"></span>
+        </div>
+        <div class="form-group">
+          <label>Telefon raqami</label>
+          <input type="text" id="f-phone" placeholder="+998901234567" oninput="formatPhone(this)">
+          <span class="field-error" id="err-phone"></span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Boshlanish sanasi</label>
+          <input type="date" id="f-start">
+          <span class="field-error" id="err-start"></span>
+        </div>
+        <div class="form-group">
+          <label>Xodim</label>
+          <select id="f-worker">
+            <option>Xodim 1</option><option>Xodim 2</option>
+            <option>Xodim 3</option><option>Xodim 4</option><option>Xodim 5</option>
+          </select>
+        </div>
+      </div>
+      <label style="display:block;margin-bottom:8px">Asboblar tanlang</label>
+      <span class="field-error" id="err-items" style="margin-bottom:6px"></span>
+      <div class="tool-picker" id="tool-picker">
+        <div class="tool-picker-head">Asbob nomi — Kunlik narx</div>
+      </div>
+      <div class="price-table" id="price-table" style="display:none">
+        <div class="tool-picker-head" style="padding:10px 14px">Narx hisob-kitobi (taxminiy)</div>
+        <div id="price-rows"></div>
+        <div class="price-table-row">
+          <span class="price-table-label price-table-total">Jami (1 kun uchun)</span>
+          <span class="price-table-val price-table-total" id="price-total">0 so'm</span>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>To'lov holati</label>
+          <select id="f-payment">
+            <option value="unpaid">To'lanmagan</option>
+            <option value="paid">To'langan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Izoh (ixtiyoriy)</label>
+          <input type="text" id="f-note" placeholder="...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('add-modal')">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveRental()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- QAYTARISH MODAL -->
+<div class="modal-overlay" id="return-modal">
+  <div class="modal" style="width:500px">
+    <div class="modal-head">
+      <h3>Ijara yakunlash</h3>
+      <button class="close-btn" onclick="closeModal('return-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Qaytarilgan sana</label>
+          <input type="date" id="r-date">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;padding-top:20px">
+          <button class="btn btn-ghost btn-sm" onclick="setReturnToday()">Bugun</button>
+        </div>
+      </div>
+      <div class="price-table" id="return-price-table">
+        <div class="tool-picker-head" style="padding:10px 14px">Hisob-kitob</div>
+        <div id="return-price-rows"></div>
+        <div class="price-table-row">
+          <span class="price-table-label price-table-total">Jami to'lov</span>
+          <span class="price-table-val price-table-total" id="return-total">0 so'm</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('return-modal')">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="confirmReturn()">&#10003; Tasdiqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASBOB MODAL -->
+<div class="modal-overlay" id="tool-modal">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <h3 id="tool-modal-title">Asbob qo'shish</h3>
+      <button class="close-btn" onclick="closeModal('tool-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Asbob nomi</label>
+          <input type="text" id="t-name" placeholder="Masalan: Mishalka">
+          <span class="field-error" id="err-tname"></span>
+        </div>
+        <div class="form-group">
+          <label>Kunlik narx (so'm)</label>
+          <input type="number" id="t-day" placeholder="25000" min="0">
+        </div>
+        <div class="form-group">
+          <label>Umumiy miqdor (dona)</label>
+          <input type="number" id="t-qty" placeholder="1" value="1" min="1">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('tool-modal')">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveTool()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+var rentals    = JSON.parse(localStorage.getItem('ijara_rentals') || '[]');
+var tools      = JSON.parse(localStorage.getItem('ijara_tools')   || '[]');
+var editId     = null;
+var editToolId = null;
+var returnId   = null;
+
+if (tools.length === 0) {
+  tools = [
+    { id:1, name:'Beton aralashtirgich', dayRate:80000, qty:2 },
+    { id:2, name:'Perforator',           dayRate:50000, qty:3 },
+    { id:3, name:'Lestnitsa (3m)',        dayRate:25000, qty:4 },
+    { id:4, name:'Bolgar',               dayRate:40000, qty:2 },
+    { id:5, name:'Mishalka',             dayRate:25000, qty:3 },
+    { id:6, name:'Apalubka (1 dona)',    dayRate:15000, qty:10 },
+    { id:7, name:'Lesa (1 sekciya)',     dayRate:10000, qty:20 }
+  ];
+  saveTools();
+}
+
+function saveTools()   { localStorage.setItem('ijara_tools',   JSON.stringify(tools)); }
+function saveRentals() { localStorage.setItem('ijara_rentals', JSON.stringify(rentals)); }
+function fmt(n)        { return Number(n||0).toLocaleString('uz-UZ') + " so'm"; }
+function escHtml(s)    { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+
+function formatPhone(inp) {
+  var v = inp.value.replace(/\D/g,'');
+  if (v.startsWith('998')) v = '+' + v;
+  else if (v.length > 0)   v = '+998' + v;
+  inp.value = v.slice(0,13);
+}
+function isValidPhone(p) { return /^\+998\d{9}$/.test(p.replace(/\s/g,'')); }
+
+function calcDays(startStr, endStr) {
+  var s = new Date(startStr); var e = new Date(endStr);
+  s.setHours(0,0,0,0); e.setHours(0,0,0,0);
+  var ms = e - s;
+  if (ms <= 0) return 1;
+  return Math.ceil(ms / 86400000);
+}
+
+function calcRentalPrice(items, days) {
+  var total = 0;
+  items.forEach(function(item) {
+    var tool = tools.find(function(t) { return t.id === item.toolId; });
+    if (tool) total += (tool.dayRate || 0) * (item.qty || 1) * (days || 1);
+  });
+  return total;
+}
+
+function renderPriceRows(containerId, totalId, items, days) {
+  var rows = ''; var total = 0;
+  items.forEach(function(item) {
+    var tool = tools.find(function(t) { return t.id === item.toolId; });
+    if (!tool) return;
+    var sub = tool.dayRate * item.qty * days;
+    total += sub;
+    rows += '<div class="price-table-row">'
+      + '<span class="price-table-label">'+escHtml(tool.name)+' &times; '+item.qty+' dona &times; '+days+' kun</span>'
+      + '<span style="font-weight:600">'+fmt(sub)+'</span></div>';
+  });
+  document.getElementById(containerId).innerHTML = rows;
+  document.getElementById(totalId).textContent = fmt(total);
+  return total;
+}
+
+/* ===== TOOL PICKER ===== */
+function buildToolPicker(selectedItems) {
+  var html = '<div class="tool-picker-head">Asbob nomi — Kunlik narx</div>';
+  tools.forEach(function(t) {
+    var sel     = selectedItems ? selectedItems.find(function(i) { return i.toolId === t.id; }) : null;
+    var checked = sel ? 'checked' : '';
+    var qtyVal  = sel ? sel.qty : 1;
+    var inUse   = rentals.filter(function(r) { return r.status === 'active' && r.items && r.items.some(function(i) { return i.toolId === t.id; }); })
+                         .reduce(function(s,r) { var it = r.items.find(function(i){return i.toolId===t.id;}); return s+(it?it.qty:0); }, 0);
+    var avail   = t.qty - inUse + (sel ? sel.qty : 0);
+    var soldOut = avail <= 0 && !sel;
+
+    if (soldOut) {
+      // Tugagan asbob — disabled ko'rinishda, tanlash mumkin emas
+      html += '<div class="tool-picker-item" style="opacity:0.45">'
+        + '<input type="checkbox" id="chk-'+t.id+'" disabled>'
+        + '<label class="tool-picker-name" style="cursor:not-allowed">'+escHtml(t.name)
+        +   ' <span style="font-size:11px;color:var(--red);font-weight:600">Tugagan</span></label>'
+        + '<span class="tool-picker-rate">'+fmt(t.dayRate)+'/kun</span>'
+        + '<input type="number" class="tool-picker-qty" value="0" disabled style="opacity:0.3">'
+        + '</div>';
+    } else {
+      html += '<div class="tool-picker-item">'
+        + '<input type="checkbox" id="chk-'+t.id+'" value="'+t.id+'" '+checked+' onchange="onPickerChange()">'
+        + '<label for="chk-'+t.id+'" class="tool-picker-name" style="cursor:pointer">'+escHtml(t.name)
+        +   ' <span style="font-size:11px;color:var(--muted)">('+avail+' ta mavjud)</span></label>'
+        + '<span class="tool-picker-rate">'+fmt(t.dayRate)+'/kun</span>'
+        + '<input type="number" class="tool-picker-qty" id="qty-'+t.id+'" value="'+qtyVal+'" min="1" max="'+avail+'" oninput="onPickerChange()" '+(checked?'':'disabled style="opacity:0.3"')+'>'
+        + '</div>';
+    }
+  });
+  document.getElementById('tool-picker').innerHTML = html;
+}
+
+function onPickerChange() {
+  var items = getPickerItems();
+  var priceTable = document.getElementById('price-table');
+  if (items.length === 0) { priceTable.style.display = 'none'; return; }
+  priceTable.style.display = 'block';
+  tools.forEach(function(t) {
+    var chk = document.getElementById('chk-'+t.id);
+    var qty = document.getElementById('qty-'+t.id);
+    if (chk && qty) { qty.disabled = !chk.checked; qty.style.opacity = chk.checked ? '1' : '0.3'; }
+  });
+  renderPriceRows('price-rows', 'price-total', items, 1);
+}
+
+function getPickerItems() {
+  var items = [];
+  tools.forEach(function(t) {
+    var chk = document.getElementById('chk-'+t.id);
+    if (chk && chk.checked) {
+      var qty = parseInt(document.getElementById('qty-'+t.id).value) || 1;
+      items.push({ toolId: t.id, qty: qty });
+    }
+  });
+  return items;
+}
+
+/* ===== IJARA MODAL ===== */
+function openAddModal(id) {
+  editId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Ijarani tahrirlash' : 'Yangi ijara';
+  ['name','phone','start','items'].forEach(function(f) {
+    var e = document.getElementById('err-'+f); if (e) e.textContent = '';
+  });
+  var today = new Date().toISOString().slice(0,10);
+  if (id) {
+    var r = rentals.find(function(r) { return r.id === id; });
+    if (!r) return;
+    document.getElementById('f-name').value    = r.name;
+    document.getElementById('f-phone').value   = r.phone;
+    document.getElementById('f-start').value   = r.start;
+    document.getElementById('f-payment').value = r.payment;
+    document.getElementById('f-worker').value  = r.worker;
+    document.getElementById('f-note').value    = r.note || '';
+    buildToolPicker(r.items);
+  } else {
+    document.getElementById('f-name').value    = '';
+    document.getElementById('f-phone').value   = '';
+    document.getElementById('f-start').value   = today;
+    document.getElementById('f-payment').value = 'unpaid';
+    document.getElementById('f-note').value    = '';
+    buildToolPicker(null);
+  }
+  document.getElementById('price-table').style.display = 'none';
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function saveRental() {
+  var name    = document.getElementById('f-name').value.trim();
+  var phone   = document.getElementById('f-phone').value.trim();
+  var start   = document.getElementById('f-start').value;
+  var payment = document.getElementById('f-payment').value;
+  var worker  = document.getElementById('f-worker').value;
+  var note    = document.getElementById('f-note').value.trim();
+  var items   = getPickerItems();
+  var valid   = true;
+  function setErr(field, msg) {
+    var el = document.getElementById('err-'+field);
+    if (el) el.textContent = msg;
+    if (msg) valid = false;
+  }
+  setErr('name',  name               ? '' : 'Ism kiritilishi shart');
+  setErr('phone', isValidPhone(phone) ? '' : 'Telefon: +998XXXXXXXXX formatida kiriting');
+  setErr('start', start              ? '' : 'Boshlanish sanasi kiritilishi shart');
+  setErr('items', items.length > 0   ? '' : 'Kamida bitta asbob tanlang');
+
+  // Mavjud dona sonini tekshirish
+  if (items.length > 0) {
+    var stockErr = '';
+    items.forEach(function(item) {
+      var tool  = tools.find(function(t) { return t.id === item.toolId; });
+      if (!tool) return;
+      var inUse = rentals.filter(function(r) {
+        if (r.status !== 'active') return false;
+        if (editId && r.id === editId) return false; // tahrirlashda o'zini hisoblamasin
+        return r.items && r.items.some(function(i) { return i.toolId === item.toolId; });
+      }).reduce(function(s,r) {
+        var it = r.items.find(function(i) { return i.toolId === item.toolId; });
+        return s + (it ? it.qty : 0);
+      }, 0);
+      var avail = tool.qty - inUse;
+      if (item.qty > avail) {
+        stockErr = escHtml(tool.name) + ': faqat ' + avail + ' ta mavjud, ' + item.qty + ' ta so\'raldi';
+        valid = false;
+      }
+    });
+    if (stockErr) {
+      var el = document.getElementById('err-items');
+      if (el) el.textContent = stockErr;
+    }
+  }
+
+  if (!valid) return;
+  if (editId) {
+    var idx = rentals.findIndex(function(r) { return r.id === editId; });
+    rentals[idx] = Object.assign({}, rentals[idx], { name:name, phone:phone, start:start, items:items, payment:payment, worker:worker, note:note });
+    showToast('Ijara yangilandi', 'success');
+  } else {
+    rentals.unshift({
+      id: Date.now(), name:name, phone:phone, start:start,
+      items:items, payment:payment, worker:worker, note:note,
+      status:'active', price:0, returnedAt:null,
+      createdAt: new Date().toISOString(),
+      paidAt: payment==='paid' ? new Date().toISOString() : null
+    });
+    showToast("Yangi ijara qo'shildi", 'success');
+  }
+  saveRentals(); closeModal('add-modal'); renderAll();
+}
+
+/* ===== QAYTARISH ===== */
+function openReturnModal(id) {
+  returnId = id;
+  var r = rentals.find(function(r) { return r.id === id; });
+  if (!r) return;
+  var today = new Date().toISOString().slice(0,10);
+  document.getElementById('r-date').value = today;
+  updateReturnCalc();
+  document.getElementById('return-modal').classList.add('open');
+}
+
+function setReturnToday() {
+  document.getElementById('r-date').value = new Date().toISOString().slice(0,10);
+  updateReturnCalc();
+}
+
+function updateReturnCalc() {
+  var r = rentals.find(function(r) { return r.id === returnId; });
+  if (!r) return;
+  var retDate = document.getElementById('r-date').value;
+  if (!retDate) return;
+  var days = calcDays(r.start, retDate);
+  renderPriceRows('return-price-rows', 'return-total', r.items, days);
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'r-date') updateReturnCalc();
+});
+
+function confirmReturn() {
+  var r = rentals.find(function(r) { return r.id === returnId; });
+  if (!r) return;
+  var retDate = document.getElementById('r-date').value;
+  if (!retDate) { showToast('Qaytarilgan sanani kiriting', 'warning'); return; }
+  var days  = calcDays(r.start, retDate);
+  var price = calcRentalPrice(r.items, days);
+  r.status     = 'returned';
+  r.returnedAt = retDate;
+  r.price      = price;
+  r.days       = days;
+  if (r.payment === 'paid') r.paidAt = r.paidAt || new Date().toISOString();
+  saveRentals(); closeModal('return-modal'); renderAll();
+  showToast(escHtml(r.name) + ' — ' + days + ' kun, ' + fmt(price), 'success');
+}
+
+function deleteRental(id) {
+  var r = rentals.find(function(r) { return r.id === id; });
+  if (!r) return;
+  if (r.status === 'returned' || r.payment === 'paid') {
+    showToast("To'langan yoki yakunlangan ijarani o'chirib bo'lmaydi. Arxivlash uchun foydalaning.", 'error');
+    return;
+  }
+  if (!confirm("Bu ijarani o'chirishni xohlaysizmi?")) return;
+  rentals = rentals.filter(function(r) { return r.id !== id; });
+  saveRentals(); renderAll();
+  showToast("Ijara o'chirildi", 'warning');
+}
+
+function archiveRental(id) {
+  var r = rentals.find(function(r) { return r.id === id; });
+  if (!r) return;
+  if (!confirm("Bu ijarani arxivlashni xohlaysizmi? Arxivlangan ijaralar ro'yxatdan yashiriladi, lekin hisobotda saqlanadi.")) return;
+  r.archived = true;
+  saveRentals(); renderAll();
+  showToast("Ijara arxivlandi", 'warning');
+}
+
+function togglePayment(id) {
+  var r = rentals.find(function(r) { return r.id === id; });
+  if (!r) return;
+  r.payment = r.payment === 'paid' ? 'unpaid' : 'paid';
+  r.paidAt  = r.payment === 'paid' ? new Date().toISOString() : null;
+  saveRentals(); renderAll();
+  showToast("To'lov holati yangilandi", 'success');
+}
+
+/* ===== ASBOB MODAL ===== */
+function openToolModal(id) {
+  editToolId = id || null;
+  document.getElementById('tool-modal-title').textContent = id ? 'Asbobni tahrirlash' : "Asbob qo'shish";
+  var errEl = document.getElementById('err-tname');
+  if (errEl) errEl.textContent = '';
+  document.getElementById('t-name').classList.remove('error');
+  if (id) {
+    var t = tools.find(function(t) { return t.id === id; });
+    if (!t) return;
+    document.getElementById('t-name').value = t.name;
+    document.getElementById('t-day').value  = t.dayRate;
+    document.getElementById('t-qty').value  = t.qty;
+  } else {
+    document.getElementById('t-name').value = '';
+    document.getElementById('t-day').value  = '';
+    document.getElementById('t-qty').value  = '1';
+  }
+  document.getElementById('tool-modal').classList.add('open');
+}
+
+function saveTool() {
+  var name    = document.getElementById('t-name').value.trim();
+  var dayRate = parseInt(document.getElementById('t-day').value) || 0;
+  var qty     = parseInt(document.getElementById('t-qty').value) || 1;
+  if (!name) {
+    document.getElementById('err-tname').textContent = 'Asbob nomini kiriting!';
+    document.getElementById('t-name').classList.add('error');
+    return;
+  }
+  if (editToolId) {
+    var idx = tools.findIndex(function(t) { return t.id === editToolId; });
+    tools[idx] = Object.assign({}, tools[idx], { name:name, dayRate:dayRate, qty:qty });
+    showToast('Asbob yangilandi', 'success');
+  } else {
+    tools.push({ id:Date.now(), name:name, dayRate:dayRate, qty:qty });
+    showToast("Asbob qo'shildi", 'success');
+  }
+  saveTools(); closeModal('tool-modal'); renderTools(); renderAll();
+}
+
+function deleteTool(id) {
+  if (rentals.some(function(r) { return r.status==='active' && r.items && r.items.some(function(i){return i.toolId===id;}); })) {
+    showToast("Bu asbob hozir ijarada, o'chirib bo'lmaydi!", 'error'); return;
+  }
+  if (!confirm("Bu asbobni o'chirishni xohlaysizmi?")) return;
+  tools = tools.filter(function(t) { return t.id !== id; });
+  saveTools(); renderTools(); renderAll();
+  showToast("Asbob o'chirildi", 'warning');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ===== HELPERS ===== */
+function itemsLabel(items) {
+  if (!items || !items.length) return '—';
+  return items.map(function(item) {
+    var t = tools.find(function(t) { return t.id === item.toolId; });
+    return (t ? escHtml(t.name) : '?') + (item.qty > 1 ? ' x'+item.qty : '');
+  }).join(', ');
+}
+
+function itemsTags(items) {
+  if (!items || !items.length) return '—';
+  return '<div class="items-list">' + items.map(function(item) {
+    var t = tools.find(function(t) { return t.id === item.toolId; });
+    return '<span>'+(t ? escHtml(t.name) : '?')+(item.qty > 1 ? ' &times;'+item.qty : '')+'</span>';
+  }).join('') + '</div>';
+}
+
+function statusBadge(s) {
+  if (s === 'active')   return '<span class="badge active">&#9679; Faol</span>';
+  if (s === 'returned') return '<span class="badge returned">&#10003; Qaytarilgan</span>';
+  return '';
+}
+function payBadge(p) {
+  return p === 'paid'
+    ? '<span class="badge paid">To\'langan</span>'
+    : '<span class="badge unpaid">To\'lanmagan</span>';
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  return new Date(s).toLocaleDateString('uz-UZ');
+}
+
+/* ===== RENDER DASHBOARD ===== */
+function renderDashboard() {
+  var active = rentals.filter(function(r) { return r.status === 'active'; });
+  var today  = new Date().toDateString();
+  var todayIncome = rentals
+    .filter(function(r) { return r.payment==='paid' && r.paidAt && new Date(r.paidAt).toDateString()===today; })
+    .reduce(function(s,r) { return s+r.price; }, 0);
+  var unpaidTotal = rentals
+    .filter(function(r) { return r.payment==='unpaid' && r.status==='returned'; })
+    .reduce(function(s,r) { return s+r.price; }, 0);
+
+  document.getElementById('stat-active').textContent = active.length;
+  document.getElementById('stat-today').textContent  = fmt(todayIncome);
+  document.getElementById('stat-unpaid').textContent = fmt(unpaidTotal);
+  document.getElementById('stat-tools').textContent  = tools.length;
+  document.getElementById('h-active').textContent    = active.length;
+  document.getElementById('h-pending').textContent   = rentals.filter(function(r){return r.payment==='unpaid';}).length;
+  document.getElementById('h-income').textContent    = fmt(todayIncome);
+  document.getElementById('hm-active').textContent   = active.length;
+
+  /* Desktop table */
+  var tbody = document.getElementById('dashboard-table');
+  if (!active.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">&#128230;</div>Faol ijara yo\'q</div></td></tr>';
+  } else {
+    tbody.innerHTML = active.slice(0,10).map(function(r) {
+      return '<tr>'
+        + '<td><div class="td-name">'+escHtml(r.name)+'</div><div class="td-sub">'+escHtml(r.phone)+'</div></td>'
+        + '<td>'+itemsTags(r.items)+'</td>'
+        + '<td>'+fmtDate(r.start)+'</td>'
+        + '<td>'+statusBadge(r.status)+'</td>'
+        + '<td><span style="color:var(--accent);font-size:12px">Qaytarishda</span></td>'
+        + '<td onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</td>'
+        + '<td><div class="actions-cell">'
+        + '<button class="btn btn-ghost btn-sm" onclick="openAddModal('+r.id+')">&#9998;</button>'
+        + '<button class="btn btn-primary btn-sm" onclick="openReturnModal('+r.id+')">&#10003; Qaytarildi</button>'
+        + '</div></td></tr>';
+    }).join('');
+  }
+
+  /* Mobile cards */
+  var cardsEl = document.getElementById('dashboard-cards');
+  if (!active.length) {
+    cardsEl.innerHTML = '<div class="empty"><div class="empty-icon">&#128230;</div>Faol ijara yo\'q</div>';
+  } else {
+    cardsEl.innerHTML = active.slice(0,10).map(function(r) {
+      return renderRentalCard(r, true);
+    }).join('');
+  }
+}
+
+/* ===== RENDER ALL TABLE ===== */
+function renderAllTable() {
+  var q  = (document.getElementById('search-input') || {value:''}).value.toLowerCase();
+  var fs = (document.getElementById('filter-status') || {value:''}).value;
+  var filtered = rentals.filter(function(r) {
+    if (r.archived) return false;
+    var label = itemsLabel(r.items).toLowerCase();
+    var mQ = !q || r.name.toLowerCase().indexOf(q)>=0 || r.phone.indexOf(q)>=0 || label.indexOf(q)>=0;
+    var mS = !fs || r.status === fs;
+    return mQ && mS;
+  });
+
+  /* Desktop */
+  var tbody = document.getElementById('all-table');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="empty-icon">&#128203;</div>Ijara topilmadi</div></td></tr>';
+  } else {
+    tbody.innerHTML = filtered.map(function(r) {
+      var priceCell = r.status==='returned' ? fmt(r.price) : '<span style="color:var(--accent);font-size:12px">Qaytarishda</span>';
+      return '<tr>'
+        + '<td><div class="td-name">'+escHtml(r.name)+'</div></td>'
+        + '<td>'+escHtml(r.phone)+'</td>'
+        + '<td>'+itemsTags(r.items)+'</td>'
+        + '<td>'+fmtDate(r.start)+'</td>'
+        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+r.days+' kun)</span>' : '—')+'</td>'
+        + '<td>'+statusBadge(r.status)+'</td>'
+        + '<td>'+priceCell+'</td>'
+        + '<td onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</td>'
+        + '<td><div class="actions-cell">'
+        + (r.status==='active' ? '<button class="btn btn-ghost btn-sm" onclick="openAddModal('+r.id+')">&#9998;</button>' : '')
+        + (r.status==='active' ? '<button class="btn btn-primary btn-sm" onclick="openReturnModal('+r.id+')">&#10003;</button>' : '')
+        + (r.status==='active' && r.payment==='unpaid' ? '<button class="btn btn-danger btn-sm" onclick="deleteRental('+r.id+')" title="O\'chirish">&#10005;</button>' : '')
+        + (r.status==='returned' ? '<button class="btn btn-ghost btn-sm" onclick="archiveRental('+r.id+')" style="font-size:10px">Arxiv</button>' : '')
+        + '</div></td></tr>';
+    }).join('');
+  }
+
+  /* Mobile cards */
+  var cardsEl = document.getElementById('all-cards');
+  if (!filtered.length) {
+    cardsEl.innerHTML = '<div class="empty"><div class="empty-icon">&#128203;</div>Ijara topilmadi</div>';
+  } else {
+    cardsEl.innerHTML = filtered.map(function(r) {
+      return renderRentalCard(r, false);
+    }).join('');
+  }
+}
+
+/* ===== RENTAL CARD (mobile) ===== */
+function renderRentalCard(r, dashboardMode) {
+  var priceHtml = r.status === 'returned'
+    ? '<span class="rc-price green">'+fmt(r.price)+'</span>'
+    : '<span class="rc-price accent">Qaytarishda</span>';
+
+  var dateInfo = r.status === 'returned' && r.returnedAt
+    ? fmtDate(r.start) + ' → ' + fmtDate(r.returnedAt) + ' (' + r.days + ' kun)'
+    : fmtDate(r.start) + ' dan';
+
+  var actions = '';
+  if (r.status === 'active') {
+    actions += '<button class="btn btn-ghost" onclick="openAddModal('+r.id+')">&#9998; Tahrirlash</button>';
+    actions += '<button class="btn btn-primary" onclick="openReturnModal('+r.id+')">&#10003; Qaytarildi</button>';
+    if (r.payment === 'unpaid') {
+      actions += '<button class="btn btn-danger" onclick="deleteRental('+r.id+')" style="flex:0 0 auto;min-width:44px">&#10005;</button>';
+    }
+  } else {
+    actions += '<button class="btn btn-ghost" onclick="archiveRental('+r.id+')" style="font-size:12px">Arxivlash</button>';
+  }
+
+  return '<div class="rental-card">'
+    + '<div class="rc-top">'
+    + '<div><div class="rc-name">'+escHtml(r.name)+'</div><div class="rc-phone">'+escHtml(r.phone)+'</div></div>'
+    + statusBadge(r.status)
+    + '</div>'
+    + '<div class="rc-items">'+itemsLabel(r.items)+'</div>'
+    + '<div class="rc-footer">'
+    + '<span class="rc-date">'+dateInfo+'</span>'
+    + priceHtml
+    + '</div>'
+    + '<div class="rc-pay-row">'
+    + '<span class="rc-pay-label">To\'lov holati</span>'
+    + '<span onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</span>'
+    + '</div>'
+    + '<div class="rc-actions">'+actions+'</div>'
+    + '</div>';
+}
+
+/* ===== RENDER TOOLS ===== */
+function renderTools() {
+  var grid     = document.getElementById('tools-grid');
+  var cardsEl  = document.getElementById('tools-cards');
+
+  if (!tools.length) {
+    var empty = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">&#9881;</div>Asbob qo\'shilmagan</div>';
+    grid.innerHTML    = empty;
+    cardsEl.innerHTML = '<div class="empty"><div class="empty-icon">&#9881;</div>Asbob qo\'shilmagan</div>';
+    return;
+  }
+
+  var html = tools.map(function(t) {
+    var inUse = rentals.filter(function(r){return r.status==='active'&&r.items&&r.items.some(function(i){return i.toolId===t.id;});})
+                       .reduce(function(s,r){var it=r.items.find(function(i){return i.toolId===t.id;});return s+(it?it.qty:0);},0);
+    var avail = t.qty - inUse;
+    return '<div class="tool-card">'
+      + '<div class="tool-card-top">'
+      + '<div class="tool-name">'+escHtml(t.name)+'</div>'
+      + '<span class="badge '+(inUse>0?'active':'available')+'">'+(inUse>0?inUse+' ta ijarada':"Bo'sh")+'</span>'
+      + '</div>'
+      + '<div class="tool-rates">'
+      + '<div class="rate-pill">Kunlik: <span>'+Number(t.dayRate).toLocaleString()+'</span></div>'
+      + '<div class="rate-pill">Jami: <span>'+t.qty+' dona</span></div>'
+      + '<div class="rate-pill">Mavjud: <span>'+avail+' dona</span></div>'
+      + '</div>'
+      + '<div class="tool-actions">'
+      + '<button class="btn btn-ghost btn-sm" style="flex:1" onclick="openToolModal('+t.id+')">&#9998; Tahrirlash</button>'
+      + '<button class="btn btn-danger btn-sm" onclick="deleteTool('+t.id+')">&#10005;</button>'
+      + '</div></div>';
+  }).join('');
+
+  grid.innerHTML = html;
+
+  /* Mobile tool cards */
+  cardsEl.innerHTML = tools.map(function(t) {
+    var inUse = rentals.filter(function(r){return r.status==='active'&&r.items&&r.items.some(function(i){return i.toolId===t.id;});})
+                       .reduce(function(s,r){var it=r.items.find(function(i){return i.toolId===t.id;});return s+(it?it.qty:0);},0);
+    var avail = t.qty - inUse;
+    return '<div class="tool-card-mobile">'
+      + '<div class="tcm-top">'
+      + '<div class="tcm-name">'+escHtml(t.name)+'</div>'
+      + '<span class="badge '+(inUse>0?'active':'available')+'">'+(inUse>0?inUse+' ta ijarada':"Bo'sh")+'</span>'
+      + '</div>'
+      + '<div class="tcm-rates">'
+      + '<div class="rate-pill">Kunlik: <span>'+Number(t.dayRate).toLocaleString()+'</span></div>'
+      + '<div class="rate-pill">Jami: <span>'+t.qty+' dona</span></div>'
+      + '<div class="rate-pill">Mavjud: <span>'+avail+' dona</span></div>'
+      + '</div>'
+      + '<div class="tcm-actions">'
+      + '<button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="openToolModal('+t.id+')">&#9998; Tahrirlash</button>'
+      + '<button class="btn btn-danger" onclick="deleteTool('+t.id+')" style="flex:0 0 auto;min-width:44px">&#10005;</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+/* ===== RENDER REPORT ===== */
+function renderReport() {
+  var total = rentals.filter(function(r){return r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
+  var paid  = rentals.filter(function(r){return r.payment==='paid'&&r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
+  var debt  = rentals.filter(function(r){return r.payment==='unpaid'&&r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
+  document.getElementById('r-total').textContent = fmt(total);
+  document.getElementById('r-paid').textContent  = fmt(paid);
+  document.getElementById('r-debt').textContent  = fmt(debt);
+  document.getElementById('r-count').textContent = rentals.length;
+
+  var toolCounts = {};
+  rentals.forEach(function(r) {
+    if (r.items) r.items.forEach(function(item) {
+      var t = tools.find(function(t){return t.id===item.toolId;});
+      var name = t ? t.name : "Noma'lum";
+      toolCounts[name] = (toolCounts[name]||0) + 1;
+    });
+  });
+  var sorted = Object.entries(toolCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  document.getElementById('top-tools').innerHTML = sorted.length
+    ? sorted.map(function(e){return '<div class="report-item"><span>'+escHtml(e[0])+'</span><span class="report-amount" style="color:var(--accent)">'+e[1]+' marta</span></div>';}).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Ma\'lumot yo\'q</div>';
+
+  var paidList = rentals.filter(function(r){return r.payment==='paid'&&r.status==='returned';})
+    .sort(function(a,b){return new Date(b.paidAt||b.createdAt)-new Date(a.paidAt||a.createdAt);}).slice(0,5);
+  document.getElementById('recent-payments').innerHTML = paidList.length
+    ? paidList.map(function(r){return '<div class="report-item"><span>'+escHtml(r.name)+'<br><span style="font-size:11px;color:var(--muted)">'+itemsLabel(r.items)+'</span></span><span class="report-amount" style="color:var(--green)">'+fmt(r.price)+'</span></div>';}).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px 0">To\'lov yo\'q</div>';
+
+  renderWeeklyReport();
+}
+
+function renderWeeklyReport() {
+  var tbody = document.getElementById('weekly-table');
+  if (!tbody) return;
+  var days = [];
+  var now = new Date();
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(now);
+    d.setDate(d.getDate() - i);
+    d.setHours(0,0,0,0);
+    days.push(d);
+  }
+  var rows = days.map(function(day) {
+    var dayStr   = day.toISOString().slice(0,10);
+    var started  = rentals.filter(function(r) { return r.start === dayStr; });
+    var returned = rentals.filter(function(r) { return r.returnedAt === dayStr && r.status === 'returned'; });
+    var income   = rentals.filter(function(r) { return r.payment==='paid' && r.paidAt && r.paidAt.slice(0,10)===dayStr; }).reduce(function(s,r){return s+r.price;},0);
+    var paidAmt  = income;
+    var debtAmt  = returned.filter(function(r){return r.payment==='unpaid';}).reduce(function(s,r){return s+r.price;},0);
+    var isToday  = day.toDateString() === now.toDateString();
+    var label    = day.toLocaleDateString('uz-UZ', {weekday:'short', month:'short', day:'numeric'});
+    var rowStyle = isToday ? ' style="background:rgba(245,166,35,0.05)"' : '';
+    return '<tr'+rowStyle+'>'
+      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun — ':'')+label+'</span></td>'
+      + '<td>'+started.length+'</td>'
+      + '<td>'+returned.length+'</td>'
+      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'—')+'</td>'
+      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'—')+'</td>'
+      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'—')+'</td>'
+      + '</tr>';
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+function resetReport() {
+  if (!confirm("Barcha ijara tarixi o'chiriladi (asboblar saqlanib qoladi). Davom etasizmi?")) return;
+  rentals = [];
+  saveRentals(); renderAll();
+  showToast("Hisobot tozalandi", 'warning');
+}
+
+/* ===== RENDER ALL ===== */
+function renderAll() {
+  renderDashboard();
+  renderAllTable();
+  renderTools();
+  renderReport();
+}
+
+/* ===== PAGE NAVIGATION ===== */
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.querySelectorAll('.bn-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('page-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  renderAll();
+}
+
+/* ===== TOAST ===== */
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type||'');
+  setTimeout(function(){t.className='';}, 3000);
+}
+
+/* ===== MODAL CLOSE ===== */
+document.querySelectorAll('.modal-overlay').forEach(function(el) {
+  el.addEventListener('click', function(e){ if(e.target===el) el.classList.remove('open'); });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(function(el){el.classList.remove('open');});
+});
+
+renderAll();
+</script>
+</body>
+</html>

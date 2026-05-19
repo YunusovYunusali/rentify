@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>BuildZone — Icon Generator</title>
+<style>
+  body { font-family: sans-serif; background: #111; color: #eee; padding: 30px; }
+  h2 { color: #f5a623; }
+  .grid { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+  .item { text-align: center; font-size: 11px; color: #aaa; }
+  canvas { display: block; border-radius: 12px; border: 1px solid #333; }
+  button {
+    background: #f5a623; color: #000; border: none; padding: 12px 28px;
+    font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer;
+    margin-top: 10px;
+  }
+  button:hover { background: #e8a020; }
+  .status { margin-top: 14px; color: #4caf50; font-weight: 600; }
+</style>
+</head>
+<body>
+<h2>BuildZone Icon Generator</h2>
+<p>Quyidagi ikonkalar avtomatik yaratiladi. <strong>"Barcha ikonkalarni yuklab olish"</strong> tugmasini bosing.</p>
+
+<div class="grid" id="preview-grid"></div>
+
+<button onclick="downloadAll()">⬇ Barcha ikonkalarni yuklab olish</button>
+<div class="status" id="status"></div>
+
+<script>
+const SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
+const MASKABLE_SIZES = [192, 512];
+
+// BuildZone SVG logosi — to'g'ridan-to'g'ri canvas ga chizamiz
+function drawIcon(canvas, size, maskable) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = size;
+  canvas.height = size;
+
+  const s = size;
+  const pad = maskable ? s * 0.18 : s * 0.08; // maskable uchun katta padding
+
+  // Fon
+  if (maskable) {
+    // Maskable: to'liq qora fon
+    ctx.fillStyle = '#0f0f0f';
+    ctx.fillRect(0, 0, s, s);
+  } else {
+    // Oddiy: yumaloq burchakli qora fon
+    const r = s * 0.18;
+    ctx.fillStyle = '#0f0f0f';
+    roundRect(ctx, 0, 0, s, s, r);
+    ctx.fill();
+  }
+
+  // Logo chizish maydoni
+  const lx = pad;
+  const ly = pad;
+  const lw = s - pad * 2;
+  const lh = s - pad * 2;
+
+  // Nisbatlar (original SVG: 52x52, logo qismi 4,8 dan 34,48 gacha)
+  // 3 ta gorizontal bar (pastdan yuqoriga)
+  const barH = lh * 0.22;
+  const gap  = lh * 0.04;
+
+  // Bar 1 — eng katta (pastki)
+  const b1w = lw * 0.88;
+  const b1y = ly + lh - barH;
+  drawBar(ctx, lx, b1y, b1w, barH, s * 0.03, '#E8A020');
+
+  // Bar 2 — o'rta
+  const b2w = lw * 0.70;
+  const b2y = b1y - barH - gap;
+  drawBar(ctx, lx, b2y, b2w, barH, s * 0.03, '#D4901A');
+
+  // Bar 3 — eng kichik (yuqori)
+  const b3w = lw * 0.52;
+  const b3y = b2y - barH - gap;
+  drawBar(ctx, lx, b3y, b3w, barH, s * 0.03, '#C07C10');
+
+  // Diagonal chiziq (o'ng tomonda)
+  const lineX1 = lx + lw * 0.94;
+  const lineY1 = ly + lh;
+  const lineX2 = lx + lw * 1.0;
+  const lineY2 = ly;
+  ctx.save();
+  ctx.strokeStyle = '#E8A020';
+  ctx.lineWidth = s * 0.045;
+  ctx.lineCap = 'round';
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(Math.min(lineX1, s - pad * 0.3), lineY1);
+  ctx.lineTo(Math.min(lineX2, s - pad * 0.3), lineY2 + lh * 0.1);
+  ctx.stroke();
+  ctx.restore();
+
+  // Kichik kvadrat (yuqori o'ng)
+  const sqSize = lw * 0.22;
+  const sqX = lx + lw * 0.72;
+  const sqY = ly;
+  ctx.save();
+  ctx.strokeStyle = '#E8A020';
+  ctx.lineWidth = s * 0.03;
+  ctx.globalAlpha = 0.6;
+  roundRect(ctx, sqX, sqY, sqSize, sqSize, s * 0.025);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBar(ctx, x, y, w, h, r, color) {
+  ctx.fillStyle = color;
+  roundRect(ctx, x, y, w, h, r);
+  ctx.fill();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// Preview yaratish
+const grid = document.getElementById('preview-grid');
+SIZES.forEach(size => {
+  const div = document.createElement('div');
+  div.className = 'item';
+  const canvas = document.createElement('canvas');
+  const displaySize = Math.min(size, 96);
+  canvas.style.width = displaySize + 'px';
+  canvas.style.height = displaySize + 'px';
+  drawIcon(canvas, size, false);
+  canvas.id = 'icon-' + size;
+  div.appendChild(canvas);
+  div.appendChild(document.createTextNode(size + 'x' + size));
+  grid.appendChild(div);
+});
+
+// Maskable preview
+MASKABLE_SIZES.forEach(size => {
+  const div = document.createElement('div');
+  div.className = 'item';
+  const canvas = document.createElement('canvas');
+  const displaySize = Math.min(size, 96);
+  canvas.style.width = displaySize + 'px';
+  canvas.style.height = displaySize + 'px';
+  drawIcon(canvas, size, true);
+  canvas.id = 'icon-' + size + '-maskable';
+  div.appendChild(canvas);
+  div.appendChild(document.createTextNode(size + 'x' + size + ' (maskable)'));
+  grid.appendChild(div);
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function downloadAll() {
+  const status = document.getElementById('status');
+  status.textContent = 'Yuklanmoqda...';
+
+  const files = [
+    ...SIZES.map(s => ({ id: 'icon-' + s, name: 'icon-' + s + '.png', size: s, maskable: false })),
+    ...MASKABLE_SIZES.map(s => ({ id: 'icon-' + s + '-maskable', name: 'icon-' + s + '-maskable.png', size: s, maskable: true }))
+  ];
+
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const canvas = document.getElementById(f.id);
+    // To'liq o'lchamda qayta chizamiz (preview kichik bo'lishi mumkin)
+    const fullCanvas = document.createElement('canvas');
+    drawIcon(fullCanvas, f.size, f.maskable);
+    const link = document.createElement('a');
+    link.download = f.name;
+    link.href = fullCanvas.toDataURL('image/png');
+    link.click();
+    status.textContent = `Yuklanmoqda: ${f.name} (${i+1}/${files.length})`;
+    await sleep(300);
+  }
+
+  status.textContent = `✓ Hammasi tayyor! ${files.length} ta fayl yuklandi. Ularni loyiha papkasiga ko'chiring.`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildZone Logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f0f0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+  }
+
+  .logo-dark {
+    background: #111;
+    padding: 48px 64px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .logo-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 28px,
+      rgba(255,255,255,0.015) 28px,
+      rgba(255,255,255,0.015) 29px
+    );
+  }
+
+  .bz-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .word-build {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 42px;
+    letter-spacing: -0.5px;
+    color: #F5F0E8;
+    line-height: 1;
+  }
+
+  .word-zone {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: 7px;
+    color: #E8A020;
+    line-height: 1;
+  }
+
+  .tagline {
+    font-size: 9px;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    margin-top: 6px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo-dark">
+  <svg class="bz-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="34" width="30" height="14" rx="1" fill="#E8A020"/>
+    <rect x="4" y="20" width="24" height="12" rx="1" fill="#D4901A"/>
+    <rect x="4" y="8"  width="18" height="10" rx="1" fill="#C07C10"/>
+    <line x1="36" y1="48" x2="48" y2="8" stroke="#E8A020" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+    <rect x="40" y="6" width="8" height="8" rx="1" fill="none" stroke="#E8A020" stroke-width="1.5" opacity="0.6"/>
+  </svg>
+
+  <div class="wordmark">
+    <span class="word-build">BUILD</span>
+    <span class="word-zone">ZONE</span>
+    <span class="tagline">Construction Supply</span>
+  </div>
+</div>
+
+</body>
+</html>
