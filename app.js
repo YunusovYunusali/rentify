@@ -490,6 +490,33 @@ function loginSuccess(username) {
     currentCategory = userCategory;
     document.getElementById('app').style.display = 'block';
     initApp();
+    // Firebase dan yangi ma'lumotlarni yuklash
+    setTimeout(function() {
+      db.collection('shops').doc(currentUser).collection('data').doc('items').get()
+        .then(function(snap) {
+          if (snap.exists && snap.data().list) {
+            items = snap.data().list;
+            localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(items));
+            renderItems && renderItems();
+          }
+        }).catch(function(){});
+      db.collection('shops').doc(currentUser).collection('data').doc('tools').get()
+        .then(function(snap) {
+          if (snap.exists && snap.data().list) {
+            tools = snap.data().list;
+            localStorage.setItem(DB_PREFIX + 'tools', JSON.stringify(tools));
+            renderItems && renderItems();
+          }
+        }).catch(function(){});
+      db.collection('shops').doc(currentUser).collection('data').doc('rentals').get()
+        .then(function(snap) {
+          if (snap.exists && snap.data().list) {
+            rentals = snap.data().list;
+            localStorage.setItem(DB_PREFIX + 'rentals', JSON.stringify(rentals));
+            renderRentals && renderRentals();
+          }
+        }).catch(function(){});
+    }, 500);
   }
 }
 
