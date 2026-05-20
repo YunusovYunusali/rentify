@@ -1,4 +1,20 @@
-﻿'use strict';
+﻿// ImgBB rasm yuklash
+async function uploadImageToImgBB(base64data) {
+  try {
+    var base64 = base64data.replace(/^data:image\/[a-z]+;base64,/, '');
+    var formData = new FormData();
+    formData.append('image', base64);
+    var res = await fetch('https://api.imgbb.com/1/upload?key=079bd6f790fa3a7e6aa29657115e7585', {
+      method: 'POST',
+      body: formData
+    });
+    var json = await res.json();
+    if (json.success) return json.data.url;
+  } catch(e) { console.warn('ImgBB xato:', e); }
+  return base64data; // xato bo'lsa base64 ni qaytaradi
+}
+
+'use strict';
 
 /* ===== INDEXEDDB — RASM SAQLASH ===== */
 var _idb = null; // IndexedDB instance
@@ -74,6 +90,8 @@ function loadAllItemImages(itemsList) {
       if (imgs && imgs.length) {
         item.images = imgs;
         item.imageBase64 = imgs[0].base64 || null;
+      } else if (item.imageBase64) {
+        item.images = [{ base64: item.imageBase64, name: 'rasm' }];
       }
       return item;
     });
@@ -870,24 +888,31 @@ function saveTools() {
       .set({ list: tools }).catch(function(e){ console.warn('FB tools:', e); });
   } catch(e) { showToast && showToast("Xotira to'lib qoldi...", 'error'); }
 }
-function saveItems() {
+async function saveItems() {
   try {
-    // Rasmlarni IDB ga saqlash, localStorage ga faqat matnli ma'lumotlar
     var imgPromises = items.map(function(item) {
       var imgs = item.images && item.images.length ? item.images : [];
       return idbSaveImages(imgKey(item.id), imgs);
     });
-    // localStorage ga rasmlarni olib tashlab saqlash
-    var itemsNoImgs = items.map(function(item) {
+
+    // Rasmlarni ImgBB ga yuklash
+    var itemsWithUrls = await Promise.all(items.map(async function(item) {
       var copy = Object.assign({}, item);
-      delete copy.images;
-      delete copy.imageBase64;
+      if (copy.images && copy.images.length) {
+        var urls = await Promise.all(copy.images.map(async function(img) {
+          if (img && img.startsWith('http')) return img; // allaqachon URL
+          return await uploadImageToImgBB(img);
+        }));
+        copy.images = urls;
+        copy.imageBase64 = urls[0] || null;
+      }
       return copy;
-    });
-    localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(itemsNoImgs));
+    }));
+
+    localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(itemsWithUrls));
     db.collection('shops').doc(currentUser).collection('data').doc('items')
-      .set({ list: itemsNoImgs }).catch(function(e){ console.warn('FB items:', e); });
-    // IDB saqlash (background)
+      .set({ list: itemsWithUrls }).catch(function(e){ console.warn('FB items:', e); });
+
     Promise.all(imgPromises).catch(function(e) {
       console.warn('IDB saqlashda xato:', e);
     });
