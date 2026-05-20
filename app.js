@@ -819,6 +819,7 @@ function initApp() {
       rentals = (snap.exists && snap.data().list) ? snap.data().list : JSON.parse(localStorage.getItem(DB_PREFIX + 'rentals') || '[]');
       rentals = migrateExistingRentals(rentals);
       localStorage.setItem(DB_PREFIX + 'rentals', JSON.stringify(rentals));
+      renderRentals && renderRentals();
     }).catch(function() {
       rentals = JSON.parse(localStorage.getItem(DB_PREFIX + 'rentals') || '[]');
       rentals = migrateExistingRentals(rentals);
@@ -837,6 +838,8 @@ function initApp() {
       if (snap.exists && snap.data().list) {
         items = snap.data().list;
         localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(items));
+        renderItems && renderItems();
+        renderDashboard && renderDashboard();
       }
     }).catch(function(){});
 
