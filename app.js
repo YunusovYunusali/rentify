@@ -16,7 +16,7 @@ async function uploadImageToImgBB(base64data) {
 
 'use strict';
 
-/* ===== INDEXEDDB — RASM SAQLASH ===== */
+/* ===== INDEXEDDB ï¿½ RASM SAQLASH ===== */
 var _idb = null; // IndexedDB instance
 
 function openIDB(username) {
@@ -161,7 +161,7 @@ function showRegError(msg) {
 }
 
 function simpleHash(str) {
-  // Oddiy hash — xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
+  // Oddiy hash ï¿½ xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
   var h = 0;
   for (var i = 0; i < str.length; i++) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
@@ -206,13 +206,13 @@ function doRegister() {
 
   if (role === 'customer') {
     // Mijoz sifatida ro'yxatdan o'tish: joylashuv so'ralmaydi, customer sahifasiga yo'naltiramiz
-    showToast && showToast('Mijoz sifatida ro\'yxatdan o\'tildi — katalogga yo\'naltirilmoqda', 'success');
+    showToast && showToast('Mijoz sifatida ro\'yxatdan o\'tildi ï¿½ katalogga yo\'naltirilmoqda', 'success');
     // Open customer page in same tab
     window.location.href = 'customer.html';
     return;
   }
 
-  // Ijarachi (owner) registratsiyasi — joylashuv talab qilinadi
+  // Ijarachi (owner) registratsiyasi ï¿½ joylashuv talab qilinadi
   var locationAddress = (document.getElementById('reg-location-address').value || '').trim();
   var locationLat = (document.getElementById('reg-location-lat').value || '').trim();
   var locationLng = (document.getElementById('reg-location-lng').value || '').trim();
@@ -270,7 +270,7 @@ function detectRegisterLocation() {
   window._reg_samples = [];
   window._regWatchId = null;
   window._regSamplingTimer = null;
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yig‘ilmoqda...'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yigï¿½ilmoqda...'; }
   var sampleCount = 0; var maxSamples = 10; var desiredAccuracy = 20; // meters
   try {
     window._regWatchId = navigator.geolocation.watchPosition(function(position){
@@ -279,7 +279,7 @@ function detectRegisterLocation() {
     var lng = position.coords.longitude;
     var accuracy = position.coords.accuracy || 0;
     window._reg_samples.push({lat:lat,lng:lng,accuracy:accuracy,t:Date.now()});
-    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' — aniqlik: ~' + Math.round(accuracy) + ' m';
+    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' ï¿½ aniqlik: ~' + Math.round(accuracy) + ' m';
     // if we have a very good reading, stop early
     if(accuracy <= desiredAccuracy || sampleCount >= maxSamples){
       // pick best
@@ -312,7 +312,7 @@ function detectRegisterLocation() {
       var best = window._reg_samples.reduce(function(a,b){ return (a.accuracy<=b.accuracy)?a:b; });
       applyBestRegisterSample(best);
     } else {
-      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib ko‘ring.';
+      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib koï¿½ring.';
       var retry = document.getElementById('reg-retry-btn'); if(retry) retry.style.display='';
     }
     stopRegSampling();
@@ -322,7 +322,7 @@ function detectRegisterLocation() {
 function stopRegSampling(){
   if(window._regWatchId){ navigator.geolocation.clearWatch(window._regWatchId); window._regWatchId = null; }
   if(window._regSamplingTimer){ clearTimeout(window._regSamplingTimer); window._regSamplingTimer = null; }
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='Yig‘ish to‘xtadi.'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='Yigï¿½ish toï¿½xtadi.'; }
 }
 
 function applyBestRegisterSample(sample){
@@ -356,7 +356,7 @@ function initRegLeafletMap(lat,lng){
   div.style.display = '';
   if(!window._regLeafletMap){
     window._regLeafletMap = L.map('reg-location-leaflet').setView([lat,lng],15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(window._regLeafletMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'ï¿½ OpenStreetMap contributors'}).addTo(window._regLeafletMap);
     window._regLeafletMarker = L.marker([lat,lng],{draggable:true}).addTo(window._regLeafletMap);
     window._regLeafletMarker.on('dragend', function(e){
       var pos = e.target.getLatLng();
@@ -364,7 +364,7 @@ function initRegLeafletMap(lat,lng){
       var lngEl = document.getElementById('reg-location-lng'); if(lngEl) lngEl.value = pos.lng.toFixed(6);
       var confirmed = document.getElementById('reg-location-confirmed'); if(confirmed) confirmed.value='0';
       var confirmBtn = document.getElementById('reg-confirm-btn'); if(confirmBtn) confirmBtn.style.display='';
-      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi — joylashuvni qayta tasdiqlang.';
+      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi ï¿½ joylashuvni qayta tasdiqlang.';
       refreshRegisterLocationMap();
     });
   } else {
@@ -446,7 +446,7 @@ function reverseRegisterGeocoding(lat, lng) {
 function updateUserLocationDisplay() {
   var users = getUsers();
   var userInfo = currentUser && users[currentUser] ? users[currentUser] : null;
-  var locationText = '—';
+  var locationText = 'ï¿½';
   var mapUrl = '';
   if (userInfo && userInfo.locationLat && userInfo.locationLng) {
     locationText = userInfo.locationAddress ? userInfo.locationAddress + ' (' + userInfo.locationLat + ', ' + userInfo.locationLng + ')' : userInfo.locationLat + ', ' + userInfo.locationLng;
@@ -483,7 +483,7 @@ function loginSuccess(username) {
   var users = getUsers();
   var userCategory = users[username] ? users[username].category : null;
   if (!userCategory) {
-    // Kategoriya tanlanmagan — kategoriya tanlash ekranini ko'rsat
+    // Kategoriya tanlanmagan ï¿½ kategoriya tanlash ekranini ko'rsat
     document.getElementById('app').style.display = 'none';
     showCategorySelect();
   } else {
@@ -918,7 +918,7 @@ function saveTools() {
       .set({ list: tools }).catch(function(e){ console.warn('FB tools:', e); });
   } catch(e) { showToast && showToast("Xotira to'lib qoldi...", 'error'); }
 }
-async function await saveItems() {
+async function saveItems() {
   try {
     var imgPromises = items.map(function(item) {
       var imgs = item.images && item.images.length ? item.images : [];
@@ -1045,7 +1045,7 @@ function renderPriceRows(containerId, totalId, items, hours) {
 
 /* ===== TOOL PICKER ===== */
 function buildToolPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Asbob nomi — Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Asbob nomi ï¿½ Kunlik narx</div>';
   // tools bo'sh bo'lsa localStorage dan qayta yukla
   if (!tools || tools.length === 0) {
     tools = JSON.parse(localStorage.getItem(DB_PREFIX + 'tools') || '[]');
@@ -1069,7 +1069,7 @@ function buildToolPicker(selectedItems) {
     var soldOut = avail <= 0 && !sel;
 
     if (soldOut) {
-      // Tugagan asbob — disabled ko'rinishda, tanlash mumkin emas
+      // Tugagan asbob ï¿½ disabled ko'rinishda, tanlash mumkin emas
       html += '<div class="tool-picker-item" style="opacity:0.45">'
         + '<input type="checkbox" id="chk-'+t.id+'" disabled>'
         + '<label class="tool-picker-name" style="cursor:not-allowed">'+escHtml(t.name)
@@ -1092,7 +1092,7 @@ function buildToolPicker(selectedItems) {
 
 /* ===== CAR PICKER ===== */
 function buildCarPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Avtomobil — Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Avtomobil ï¿½ Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1135,7 +1135,7 @@ function buildCarPicker(selectedItems) {
 
 /* ===== DISH PICKER ===== */
 function buildDishPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Idish nomi — Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Idish nomi ï¿½ Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1176,7 +1176,7 @@ function buildDishPicker(selectedItems) {
 
 /* ===== CLOTHES PICKER ===== */
 function buildClothesPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Kiyim nomi — Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Kiyim nomi ï¿½ Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1662,7 +1662,7 @@ function confirmReturn() {
     var t = tools.find(function(t) { return t.id === item.toolId; });
     return (t ? escHtml(t.name) : '?') + ' x' + item.qty;
   }).join(', ');
-  showToast(msg + ' — ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
+  showToast(msg + ' ï¿½ ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
 }
 
 function deleteRental(id) {
@@ -1776,14 +1776,14 @@ function getItemDisplayName(item) {
 }
 
 function itemsLabel(items) {
-  if (!items || !items.length) return '—';
+  if (!items || !items.length) return 'ï¿½';
   return items.map(function(item) {
     return getItemDisplayName(item) + (item.qty > 1 ? ' x'+item.qty : '');
   }).join(', ');
 }
 
 function itemsTags(items, returns) {
-  if (!items || !items.length) return '—';
+  if (!items || !items.length) return 'ï¿½';
   var returnedQty = {};
   if (returns && returns.length) {
     returns.forEach(function(ret) {
@@ -1821,7 +1821,7 @@ function payBadge(p) {
     : '<span class="badge unpaid">To\'lanmagan</span>';
 }
 function fmtDate(s) {
-  if (!s) return '—';
+  if (!s) return 'ï¿½';
   var d = new Date(s);
   var pad = function(n) { return String(n).padStart(2,'0'); };
   return d.toLocaleDateString('uz-UZ') + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -1908,7 +1908,7 @@ function renderAllTable() {
         + '<td>'+escHtml(r.phone)+'</td>'
         + '<td>'+itemsTags(r.items, r.returns)+'</td>'
         + '<td>'+fmtDate(r.start)+'</td>'
-        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : '—')+'</td>'
+        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : 'ï¿½')+'</td>'
         + '<td>'+statusBadge(r.status)+'</td>'
         + '<td>'+priceCell+'</td>'
         + '<td onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</td>'
@@ -2123,12 +2123,12 @@ function renderWeeklyReport() {
     var rowStyle = isToday ? ' style="background:rgba(245,166,35,0.07)"' : '';
 
     return '<tr'+rowStyle+'>'
-      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun — ':'')+label+'</span></td>'
+      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun ï¿½ ':'')+label+'</span></td>'
       + '<td style="text-align:center">'+started.length+'</td>'
       + '<td style="text-align:center">'+returned.length+'</td>'
-      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'—')+'</td>'
-      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'—')+'</td>'
-      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'—')+'</td>'
+      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'ï¿½')+'</td>'
+      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'ï¿½')+'</td>'
+      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'ï¿½')+'</td>'
       + '</tr>';
   });
   tbody.innerHTML = rows.join('');
@@ -2244,7 +2244,7 @@ function openCheck(id) {
     + '<div style="margin-bottom:10px">'
     + '<div><b>Mijoz:</b> '+escHtml(r.name)+'</div>'
     + '<div><b>Telefon:</b> '+escHtml(r.phone)+'</div>'
-    + '<div><b>Xodim:</b> '+escHtml(r.worker||'—')+'</div>'
+    + '<div><b>Xodim:</b> '+escHtml(r.worker||'ï¿½')+'</div>'
     + '<div><b>Boshlanish:</b> '+fmtDate(r.start)+'</div>'
     + '<div><b>Qaytarilgan:</b> '+fmtDate(r.returnedAt)+'</div>'
     + '<div><b>Davomiylik:</b> '+fmtDuration(r.hours||0)+'</div>'
@@ -2825,7 +2825,7 @@ function renderCars() {
     var inUse  = getItemInUseQty(car.id) > 0;
     var imgs   = car.images && car.images.length ? car.images : (car.imageBase64 ? [{base64: car.imageBase64}] : []);
     var galId  = 'gal-'+car.id;
-    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' · ');
+    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' ï¿½ ');
 
     // Rasm qismi
     var imgSection;
@@ -2859,7 +2859,7 @@ function renderCars() {
       + '<div class="car-card-body">'
       + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
       + '<div class="car-card-name">'+escHtml(car.brand)+(car.model?' '+escHtml(car.model):'')+'</div>'
-      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' · '+meta:'')+'</div>'
+      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' ï¿½ '+meta:'')+'</div>'
       + '<div class="car-card-price">'+Number(car.dayRate||0).toLocaleString()+' so\'m/kun</div>'
       + '<div class="car-card-actions">'
       + '<button class="car-btn-bron" onclick="openCarModal('+car.id+')">&#9998; Tahrirlash</button>'
@@ -3020,10 +3020,10 @@ function showPage(id, el) {
     setTimeout(function() {
       renderWorkerSettings();
       var el = document.getElementById('settings-username');
-      if (el) el.textContent = currentUser || '—';
+      if (el) el.textContent = currentUser || 'ï¿½';
       var catEl = document.getElementById('settings-category');
       if (catEl) {
-        catEl.textContent = getCategoryInfo(currentCategory).nav || '—';
+        catEl.textContent = getCategoryInfo(currentCategory).nav || 'ï¿½';
       }
     }, 0);
   }
@@ -3086,7 +3086,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Scroll tugmalari — main elementni scroll qilish
+// Scroll tugmalari ï¿½ main elementni scroll qilish
 function scrollMainBy(amount) {
   var mainEl = document.querySelector('main');
   if (mainEl) {
