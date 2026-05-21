@@ -1,4 +1,4 @@
-Ôªø// ImgBB rasm yuklash
+// ImgBB rasm yuklash
 async function uploadImageToImgBB(base64data) {
   try {
     var base64 = base64data.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -16,7 +16,7 @@ async function uploadImageToImgBB(base64data) {
 
 'use strict';
 
-/* ===== INDEXEDDB ‚Äî RASM SAQLASH ===== */
+/* ===== INDEXEDDB ó RASM SAQLASH ===== */
 var _idb = null; // IndexedDB instance
 
 function openIDB(username) {
@@ -161,7 +161,7 @@ function showRegError(msg) {
 }
 
 function simpleHash(str) {
-  // Oddiy hash ‚Äî xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
+  // Oddiy hash ó xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
   var h = 0;
   for (var i = 0; i < str.length; i++) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
@@ -206,13 +206,13 @@ function doRegister() {
 
   if (role === 'customer') {
     // Mijoz sifatida ro'yxatdan o'tish: joylashuv so'ralmaydi, customer sahifasiga yo'naltiramiz
-    showToast && showToast('Mijoz sifatida ro\'yxatdan o\'tildi ‚Äî katalogga yo\'naltirilmoqda', 'success');
+    showToast && showToast('Mijoz sifatida ro\'yxatdan o\'tildi ó katalogga yo\'naltirilmoqda', 'success');
     // Open customer page in same tab
     window.location.href = 'customer.html';
     return;
   }
 
-  // Ijarachi (owner) registratsiyasi ‚Äî joylashuv talab qilinadi
+  // Ijarachi (owner) registratsiyasi ó joylashuv talab qilinadi
   var locationAddress = (document.getElementById('reg-location-address').value || '').trim();
   var locationLat = (document.getElementById('reg-location-lat').value || '').trim();
   var locationLng = (document.getElementById('reg-location-lng').value || '').trim();
@@ -270,7 +270,7 @@ function detectRegisterLocation() {
   window._reg_samples = [];
   window._regWatchId = null;
   window._regSamplingTimer = null;
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yig‚Äòilmoqda...'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yigëilmoqda...'; }
   var sampleCount = 0; var maxSamples = 10; var desiredAccuracy = 20; // meters
   try {
     window._regWatchId = navigator.geolocation.watchPosition(function(position){
@@ -279,7 +279,7 @@ function detectRegisterLocation() {
     var lng = position.coords.longitude;
     var accuracy = position.coords.accuracy || 0;
     window._reg_samples.push({lat:lat,lng:lng,accuracy:accuracy,t:Date.now()});
-    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' ‚Äî aniqlik: ~' + Math.round(accuracy) + ' m';
+    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' ó aniqlik: ~' + Math.round(accuracy) + ' m';
     // if we have a very good reading, stop early
     if(accuracy <= desiredAccuracy || sampleCount >= maxSamples){
       // pick best
@@ -312,7 +312,7 @@ function detectRegisterLocation() {
       var best = window._reg_samples.reduce(function(a,b){ return (a.accuracy<=b.accuracy)?a:b; });
       applyBestRegisterSample(best);
     } else {
-      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib ko‚Äòring.';
+      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib koëring.';
       var retry = document.getElementById('reg-retry-btn'); if(retry) retry.style.display='';
     }
     stopRegSampling();
@@ -322,7 +322,7 @@ function detectRegisterLocation() {
 function stopRegSampling(){
   if(window._regWatchId){ navigator.geolocation.clearWatch(window._regWatchId); window._regWatchId = null; }
   if(window._regSamplingTimer){ clearTimeout(window._regSamplingTimer); window._regSamplingTimer = null; }
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='Yig‚Äòish to‚Äòxtadi.'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='Yigëish toëxtadi.'; }
 }
 
 function applyBestRegisterSample(sample){
@@ -356,7 +356,7 @@ function initRegLeafletMap(lat,lng){
   div.style.display = '';
   if(!window._regLeafletMap){
     window._regLeafletMap = L.map('reg-location-leaflet').setView([lat,lng],15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'¬© OpenStreetMap contributors'}).addTo(window._regLeafletMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(window._regLeafletMap);
     window._regLeafletMarker = L.marker([lat,lng],{draggable:true}).addTo(window._regLeafletMap);
     window._regLeafletMarker.on('dragend', function(e){
       var pos = e.target.getLatLng();
@@ -364,7 +364,7 @@ function initRegLeafletMap(lat,lng){
       var lngEl = document.getElementById('reg-location-lng'); if(lngEl) lngEl.value = pos.lng.toFixed(6);
       var confirmed = document.getElementById('reg-location-confirmed'); if(confirmed) confirmed.value='0';
       var confirmBtn = document.getElementById('reg-confirm-btn'); if(confirmBtn) confirmBtn.style.display='';
-      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi ‚Äî joylashuvni qayta tasdiqlang.';
+      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi ó joylashuvni qayta tasdiqlang.';
       refreshRegisterLocationMap();
     });
   } else {
@@ -446,7 +446,7 @@ function reverseRegisterGeocoding(lat, lng) {
 function updateUserLocationDisplay() {
   var users = getUsers();
   var userInfo = currentUser && users[currentUser] ? users[currentUser] : null;
-  var locationText = '‚Äî';
+  var locationText = 'ó';
   var mapUrl = '';
   if (userInfo && userInfo.locationLat && userInfo.locationLng) {
     locationText = userInfo.locationAddress ? userInfo.locationAddress + ' (' + userInfo.locationLat + ', ' + userInfo.locationLng + ')' : userInfo.locationLat + ', ' + userInfo.locationLng;
@@ -483,7 +483,7 @@ function loginSuccess(username) {
   var users = getUsers();
   var userCategory = users[username] ? users[username].category : null;
   if (!userCategory) {
-    // Kategoriya tanlanmagan ‚Äî kategoriya tanlash ekranini ko'rsat
+    // Kategoriya tanlanmagan ó kategoriya tanlash ekranini ko'rsat
     document.getElementById('app').style.display = 'none';
     showCategorySelect();
   } else {
@@ -642,7 +642,7 @@ function checkSession() {
 
 /* ===== APP INIT ===== */
 function migrateExistingRentals(rentals) {
-  // toolId ‚Üí itemId konversiyasi (orqaga moslik)
+  // toolId > itemId konversiyasi (orqaga moslik)
   rentals.forEach(function(r) {
     if (r.items) {
       r.items.forEach(function(item) {
@@ -704,7 +704,7 @@ function getCategoryInfo(categoryKey) {
       nav: 'Asboblar',
       title: 'Asboblar katalogi',
       sub: 'Ijaraga beriladigan asboblar ro\'yxati',
-      icon: '‚öôÔ∏è',
+      icon: '??',
       addLabel: '+ Asbob qo\'shish',
       addFn: 'openToolModal()',
       itemCol: 'Asboblar',
@@ -713,13 +713,13 @@ function getCategoryInfo(categoryKey) {
       modalTitle: 'Asbob qo\'shish',
       namePlaceholder: 'Asbob nomi',
       typeLabel: 'Turi',
-      check: { col: 'Asbob', icon: '‚öôÔ∏è', title: 'Qurilish Asboblari' }
+      check: { col: 'Asbob', icon: '??', title: 'Qurilish Asboblari' }
     },
     cars: {
       nav: 'Avtomobillar',
       title: 'Avtomobillar katalogi',
       sub: 'Ijaraga beriladigan avtomobillar ro\'yxati',
-      icon: 'üöó',
+      icon: '??',
       addLabel: '+ Avtomobil qo\'shish',
       addFn: 'openCarModal()',
       itemCol: 'Avtomobil',
@@ -728,13 +728,13 @@ function getCategoryInfo(categoryKey) {
       modalTitle: 'Avtomobil qo\'shish',
       namePlaceholder: 'Avtomobil nomi',
       typeLabel: 'Turi',
-      check: { col: 'Avtomobil', icon: 'üöó', title: 'Avtomobil Ijarasi' }
+      check: { col: 'Avtomobil', icon: '??', title: 'Avtomobil Ijarasi' }
     },
     dishes: {
       nav: 'Idish-tovoqlar',
       title: 'Idish-tovoqlar katalogi',
       sub: 'Ijaraga beriladigan idish-tovoqlar ro\'yxati',
-      icon: 'üçΩÔ∏è',
+      icon: '???',
       addLabel: '+ Idish qo\'shish',
       addFn: 'openDishModal()',
       itemCol: 'Idish-tovoq',
@@ -743,13 +743,13 @@ function getCategoryInfo(categoryKey) {
       modalTitle: 'Idish qo\'shish',
       namePlaceholder: 'Idish nomi',
       typeLabel: 'Turi',
-      check: { col: 'Idish', icon: 'üçΩÔ∏è', title: 'Idish-Tovoqlar' }
+      check: { col: 'Idish', icon: '???', title: 'Idish-Tovoqlar' }
     },
     clothes: {
       nav: 'Kiyimlar',
       title: 'Kiyimlar katalogi',
       sub: 'Ijaraga beriladigan kiyimlar ro\'yxati',
-      icon: 'üëî',
+      icon: '??',
       addLabel: '+ Kiyim qo\'shish',
       addFn: 'openClothesModal()',
       itemCol: 'Kiyim',
@@ -758,13 +758,13 @@ function getCategoryInfo(categoryKey) {
       modalTitle: 'Kiyim qo\'shish',
       namePlaceholder: 'Kiyim nomi',
       typeLabel: 'Turi',
-      check: { col: 'Kiyim', icon: 'ü§µ', title: 'Kiyim Ijarasi' }
+      check: { col: 'Kiyim', icon: '??', title: 'Kiyim Ijarasi' }
     },
     restaurants: {
       nav: 'To\'yxonalar',
       title: 'Restoran / To\'yhona katalogi',
       sub: 'Ijaraga beriladigan restoran va to\'yxonalar ro\'yxati',
-      icon: 'üçΩÔ∏è',
+      icon: '???',
       addLabel: '+ To\'yxona qo\'shish',
       addFn: 'openDishModal()',
       itemCol: 'To\'yxona',
@@ -774,13 +774,13 @@ function getCategoryInfo(categoryKey) {
       namePlaceholder: 'To\'yxona nomi',
       typeLabel: 'Turi',
       typeOptions: ['Restoran', 'To\'yxona', 'Banket zali', 'Boshqa'],
-      check: { col: 'To\'yxona', icon: 'üçΩÔ∏è', title: 'Restoran / To\'yhona Ijarasi' }
+      check: { col: 'To\'yxona', icon: '???', title: 'Restoran / To\'yhona Ijarasi' }
     },
     stadiums: {
       nav: 'Stadionlar',
       title: 'Stadion / Maydon katalogi',
       sub: 'Ijaraga beriladigan stadionlar va maydonlar ro\'yxati',
-      icon: 'üèüÔ∏è',
+      icon: '???',
       addLabel: '+ Stadion qo\'shish',
       addFn: 'openDishModal()',
       itemCol: 'Stadion',
@@ -790,13 +790,13 @@ function getCategoryInfo(categoryKey) {
       namePlaceholder: 'Maydon nomi',
       typeLabel: 'Turi',
       typeOptions: ['Stadion', 'Maydon', 'Sport majmuasi', 'Boshqa'],
-      check: { col: 'Maydon', icon: 'üèüÔ∏è', title: 'Stadion / Maydon Ijarasi' }
+      check: { col: 'Maydon', icon: '???', title: 'Stadion / Maydon Ijarasi' }
     },
     gaming: {
       nav: 'Gaming',
       title: 'Gaming uskunalari katalogi',
       sub: 'Ijaraga beriladigan PlayStation va kompyuterlar',
-      icon: 'üéÆ',
+      icon: '??',
       addLabel: '+ Uskuna qo\'shish',
       addFn: 'openDishModal()',
       itemCol: 'Uskuna',
@@ -806,7 +806,7 @@ function getCategoryInfo(categoryKey) {
       namePlaceholder: 'Uskuna nomi',
       typeLabel: 'Turi',
       typeOptions: ['PlayStation', 'Kompyuter', 'Monitor', 'Aksessuar', 'Boshqa'],
-      check: { col: 'Uskuna', icon: 'üéÆ', title: 'PlayStation / Kompyuter Ijarasi' }
+      check: { col: 'Uskuna', icon: '??', title: 'PlayStation / Kompyuter Ijarasi' }
     }
   };
   return info[categoryKey] || info.tools;
@@ -897,7 +897,7 @@ function showDailyReportIfNeeded() {
   var todayIncome = analyzeIncome('today');
   var activeCount = analyzeActiveRentals().count;
   var debtorsCount = analyzeDebtors().length;
-  var msg = 'üìä Bugungi avtomatik hisobot: Daromad ' + fmt(todayIncome) + ', faol ijaralar ' + activeCount + ', qarzdorlar ' + debtorsCount + '.';
+  var msg = '?? Bugungi avtomatik hisobot: Daromad ' + fmt(todayIncome) + ', faol ijaralar ' + activeCount + ', qarzdorlar ' + debtorsCount + '.';
   showToast && showToast(msg, 'success');
   markDailyReportShown();
 }
@@ -918,7 +918,7 @@ function saveTools() {
       .set({ list: tools }).catch(function(e){ console.warn('FB tools:', e); });
   } catch(e) { showToast && showToast("Xotira to'lib qoldi...", 'error'); }
 }
-async function saveItems() {
+async function await saveItems() {
   try {
     var imgPromises = items.map(function(item) {
       var imgs = item.images && item.images.length ? item.images : [];
@@ -1045,7 +1045,7 @@ function renderPriceRows(containerId, totalId, items, hours) {
 
 /* ===== TOOL PICKER ===== */
 function buildToolPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Asbob nomi ‚Äî Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Asbob nomi ó Kunlik narx</div>';
   // tools bo'sh bo'lsa localStorage dan qayta yukla
   if (!tools || tools.length === 0) {
     tools = JSON.parse(localStorage.getItem(DB_PREFIX + 'tools') || '[]');
@@ -1069,7 +1069,7 @@ function buildToolPicker(selectedItems) {
     var soldOut = avail <= 0 && !sel;
 
     if (soldOut) {
-      // Tugagan asbob ‚Äî disabled ko'rinishda, tanlash mumkin emas
+      // Tugagan asbob ó disabled ko'rinishda, tanlash mumkin emas
       html += '<div class="tool-picker-item" style="opacity:0.45">'
         + '<input type="checkbox" id="chk-'+t.id+'" disabled>'
         + '<label class="tool-picker-name" style="cursor:not-allowed">'+escHtml(t.name)
@@ -1092,7 +1092,7 @@ function buildToolPicker(selectedItems) {
 
 /* ===== CAR PICKER ===== */
 function buildCarPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Avtomobil ‚Äî Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Avtomobil ó Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1109,7 +1109,7 @@ function buildCarPicker(selectedItems) {
       ? '<img src="'+car.images[0].base64+'" alt="'+escHtml(car.plateNumber)+'" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;vertical-align:middle">'
       : car.imageBase64
         ? '<img src="'+car.imageBase64+'" alt="'+escHtml(car.plateNumber)+'" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;vertical-align:middle">'
-        : '<span style="font-size:24px;margin-right:8px;vertical-align:middle">üöó</span>';
+        : '<span style="font-size:24px;margin-right:8px;vertical-align:middle">??</span>';
     var label = escHtml(car.plateNumber || '') + (car.brand ? ' ' + escHtml(car.brand) : '');
 
     if (inUse && !sel) {
@@ -1135,7 +1135,7 @@ function buildCarPicker(selectedItems) {
 
 /* ===== DISH PICKER ===== */
 function buildDishPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Idish nomi ‚Äî Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Idish nomi ó Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1176,7 +1176,7 @@ function buildDishPicker(selectedItems) {
 
 /* ===== CLOTHES PICKER ===== */
 function buildClothesPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Kiyim nomi ‚Äî Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Kiyim nomi ó Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1662,7 +1662,7 @@ function confirmReturn() {
     var t = tools.find(function(t) { return t.id === item.toolId; });
     return (t ? escHtml(t.name) : '?') + ' x' + item.qty;
   }).join(', ');
-  showToast(msg + ' ‚Äî ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
+  showToast(msg + ' ó ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
 }
 
 function deleteRental(id) {
@@ -1776,14 +1776,14 @@ function getItemDisplayName(item) {
 }
 
 function itemsLabel(items) {
-  if (!items || !items.length) return '‚Äî';
+  if (!items || !items.length) return 'ó';
   return items.map(function(item) {
     return getItemDisplayName(item) + (item.qty > 1 ? ' x'+item.qty : '');
   }).join(', ');
 }
 
 function itemsTags(items, returns) {
-  if (!items || !items.length) return '‚Äî';
+  if (!items || !items.length) return 'ó';
   var returnedQty = {};
   if (returns && returns.length) {
     returns.forEach(function(ret) {
@@ -1821,7 +1821,7 @@ function payBadge(p) {
     : '<span class="badge unpaid">To\'lanmagan</span>';
 }
 function fmtDate(s) {
-  if (!s) return '‚Äî';
+  if (!s) return 'ó';
   var d = new Date(s);
   var pad = function(n) { return String(n).padStart(2,'0'); };
   return d.toLocaleDateString('uz-UZ') + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -1908,7 +1908,7 @@ function renderAllTable() {
         + '<td>'+escHtml(r.phone)+'</td>'
         + '<td>'+itemsTags(r.items, r.returns)+'</td>'
         + '<td>'+fmtDate(r.start)+'</td>'
-        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : '‚Äî')+'</td>'
+        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : 'ó')+'</td>'
         + '<td>'+statusBadge(r.status)+'</td>'
         + '<td>'+priceCell+'</td>'
         + '<td onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</td>'
@@ -1940,7 +1940,7 @@ function renderRentalCard(r, dashboardMode) {
     : '<span class="rc-price accent">Qaytarishda</span>';
 
   var dateInfo = r.status === 'returned' && r.returnedAt
-    ? fmtDate(r.start) + ' ‚Üí ' + fmtDate(r.returnedAt) + ' (' + fmtDuration(r.hours||0) + ')'
+    ? fmtDate(r.start) + ' > ' + fmtDate(r.returnedAt) + ' (' + fmtDuration(r.hours||0) + ')'
     : fmtDate(r.start) + ' dan';
 
   var actions = '';
@@ -2123,12 +2123,12 @@ function renderWeeklyReport() {
     var rowStyle = isToday ? ' style="background:rgba(245,166,35,0.07)"' : '';
 
     return '<tr'+rowStyle+'>'
-      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun ‚Äî ':'')+label+'</span></td>'
+      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun ó ':'')+label+'</span></td>'
       + '<td style="text-align:center">'+started.length+'</td>'
       + '<td style="text-align:center">'+returned.length+'</td>'
-      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'‚Äî')+'</td>'
-      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'‚Äî')+'</td>'
-      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'‚Äî')+'</td>'
+      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'ó')+'</td>'
+      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'ó')+'</td>'
+      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'ó')+'</td>'
       + '</tr>';
   });
   tbody.innerHTML = rows.join('');
@@ -2244,7 +2244,7 @@ function openCheck(id) {
     + '<div style="margin-bottom:10px">'
     + '<div><b>Mijoz:</b> '+escHtml(r.name)+'</div>'
     + '<div><b>Telefon:</b> '+escHtml(r.phone)+'</div>'
-    + '<div><b>Xodim:</b> '+escHtml(r.worker||'‚Äî')+'</div>'
+    + '<div><b>Xodim:</b> '+escHtml(r.worker||'ó')+'</div>'
     + '<div><b>Boshlanish:</b> '+fmtDate(r.start)+'</div>'
     + '<div><b>Qaytarilgan:</b> '+fmtDate(r.returnedAt)+'</div>'
     + '<div><b>Davomiylik:</b> '+fmtDuration(r.hours||0)+'</div>'
@@ -2478,7 +2478,7 @@ function saveCar() {
       qty: 1
     });
   }
-  try { saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
+  try { await saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
   closeModal('car-modal');
   renderCars();
   showToast("Avtomobil saqlandi", 'success');
@@ -2492,7 +2492,7 @@ function deleteCar(id) {
   if (!confirm("Bu avtomobilni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id)); // IDB dan rasmlarni o'chir
   items = items.filter(function(c) { return c.id !== id; });
-  saveItems();
+  await saveItems();
   renderCars();
   showToast("Avtomobil o'chirildi", 'warning');
 }
@@ -2622,7 +2622,7 @@ function saveDish() {
     items.push({ id: Date.now(), name: name, type: type, qty: qty, dayRate: dayRate, images: images, imageBase64: imageBase64 });
   }
   try {
-    saveItems();
+    await saveItems();
   } catch (e) {
     showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error');
     return;
@@ -2640,7 +2640,7 @@ function deleteDish(id) {
   if (!confirm("Bu idishni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id));
   items = items.filter(function(d) { return d.id !== id; });
-  saveItems();
+  await saveItems();
   renderDishes();
   showToast("Idish o'chirildi", 'warning');
 }
@@ -2746,7 +2746,7 @@ function saveClothes() {
   } else {
     items.push({ id: Date.now(), name:name, size:size, type:type, qty:qty, dayRate:dayRate, images:images, imageBase64:imageBase64 });
   }
-  try { saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
+  try { await saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
   closeModal('clothes-modal');
   renderClothes();
   showToast("Kiyim saqlandi", 'success');
@@ -2757,7 +2757,7 @@ function deleteClothes(id) {
   if (!confirm("Bu kiyimni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id));
   items = items.filter(function(c) { return c.id !== id; });
-  saveItems();
+  await saveItems();
   renderClothes();
   showToast("Kiyim o'chirildi", 'warning');
 }
@@ -2825,7 +2825,7 @@ function renderCars() {
     var inUse  = getItemInUseQty(car.id) > 0;
     var imgs   = car.images && car.images.length ? car.images : (car.imageBase64 ? [{base64: car.imageBase64}] : []);
     var galId  = 'gal-'+car.id;
-    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' ¬∑ ');
+    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' ∑ ');
 
     // Rasm qismi
     var imgSection;
@@ -2859,7 +2859,7 @@ function renderCars() {
       + '<div class="car-card-body">'
       + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
       + '<div class="car-card-name">'+escHtml(car.brand)+(car.model?' '+escHtml(car.model):'')+'</div>'
-      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' ¬∑ '+meta:'')+'</div>'
+      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' ∑ '+meta:'')+'</div>'
       + '<div class="car-card-price">'+Number(car.dayRate||0).toLocaleString()+' so\'m/kun</div>'
       + '<div class="car-card-actions">'
       + '<button class="car-btn-bron" onclick="openCarModal('+car.id+')">&#9998; Tahrirlash</button>'
@@ -3020,10 +3020,10 @@ function showPage(id, el) {
     setTimeout(function() {
       renderWorkerSettings();
       var el = document.getElementById('settings-username');
-      if (el) el.textContent = currentUser || '‚Äî';
+      if (el) el.textContent = currentUser || 'ó';
       var catEl = document.getElementById('settings-category');
       if (catEl) {
-        catEl.textContent = getCategoryInfo(currentCategory).nav || '‚Äî';
+        catEl.textContent = getCategoryInfo(currentCategory).nav || 'ó';
       }
     }, 0);
   }
@@ -3086,7 +3086,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Scroll tugmalari ‚Äî main elementni scroll qilish
+// Scroll tugmalari ó main elementni scroll qilish
 function scrollMainBy(amount) {
   var mainEl = document.querySelector('main');
   if (mainEl) {
