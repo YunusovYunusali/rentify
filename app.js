@@ -2478,7 +2478,7 @@ function saveCar() {
       qty: 1
     });
   }
-  try { await saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
+  try { saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
   closeModal('car-modal');
   renderCars();
   showToast("Avtomobil saqlandi", 'success');
@@ -2492,7 +2492,7 @@ function deleteCar(id) {
   if (!confirm("Bu avtomobilni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id)); // IDB dan rasmlarni o'chir
   items = items.filter(function(c) { return c.id !== id; });
-  await saveItems();
+  saveItems();
   renderCars();
   showToast("Avtomobil o'chirildi", 'warning');
 }
@@ -2622,7 +2622,7 @@ function saveDish() {
     items.push({ id: Date.now(), name: name, type: type, qty: qty, dayRate: dayRate, images: images, imageBase64: imageBase64 });
   }
   try {
-    await saveItems();
+    saveItems();
   } catch (e) {
     showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error');
     return;
@@ -2640,7 +2640,7 @@ function deleteDish(id) {
   if (!confirm("Bu idishni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id));
   items = items.filter(function(d) { return d.id !== id; });
-  await saveItems();
+  saveItems();
   renderDishes();
   showToast("Idish o'chirildi", 'warning');
 }
@@ -2746,7 +2746,7 @@ function saveClothes() {
   } else {
     items.push({ id: Date.now(), name:name, size:size, type:type, qty:qty, dayRate:dayRate, images:images, imageBase64:imageBase64 });
   }
-  try { await saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
+  try { saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
   closeModal('clothes-modal');
   renderClothes();
   showToast("Kiyim saqlandi", 'success');
@@ -2757,7 +2757,7 @@ function deleteClothes(id) {
   if (!confirm("Bu kiyimni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id));
   items = items.filter(function(c) { return c.id !== id; });
-  await saveItems();
+  saveItems();
   renderClothes();
   showToast("Kiyim o'chirildi", 'warning');
 }
