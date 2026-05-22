@@ -1,4 +1,4 @@
-// ImgBB rasm yuklash
+﻿// ImgBB rasm yuklash
 async function uploadImageToImgBB(base64data) {
   try {
     var base64 = base64data.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -16,7 +16,7 @@ async function uploadImageToImgBB(base64data) {
 
 'use strict';
 
-/* ===== INDEXEDDB � RASM SAQLASH ===== */
+/* ===== INDEXEDDB пїЅ RASM SAQLASH ===== */
 var _idb = null; // IndexedDB instance
 
 function openIDB(username) {
@@ -161,7 +161,7 @@ function showRegError(msg) {
 }
 
 function simpleHash(str) {
-  // Oddiy hash � xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
+  // Oddiy hash пїЅ xavfsizlik uchun emas, faqat parolni ochiq saqlamaslik uchun
   var h = 0;
   for (var i = 0; i < str.length; i++) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
@@ -169,11 +169,12 @@ function simpleHash(str) {
   return h.toString(36);
 }
 
-function doLogin() {
+async function doLogin() {
   var username = (document.getElementById('login-username').value || '').trim().toLowerCase();
   var password = document.getElementById('login-password').value || '';
   if (!username || !password) { showLoginError("Foydalanuvchi nomi va parolni kiriting"); return; }
-  var users = getUsers();
+  showLoginError("Tekshirilmoqda...");
+  var users = await syncUsersFromFirebase();
   if (!users[username]) { showLoginError("Bunday foydalanuvchi topilmadi"); return; }
   if (users[username].hash !== simpleHash(password)) { showLoginError("Parol noto'g'ri"); return; }
   loginSuccess(username);
@@ -188,6 +189,7 @@ function doRegister() {
   // Role: owner (ijarachi) or customer (mijoz)
   var roleEl = document.querySelector('input[name="reg-role"]:checked');
   var role = roleEl ? roleEl.value : 'owner';
+  if (role !== 'owner') { role = 'owner'; }
 
   if (!username) { showRegError("Foydalanuvchi nomini kiriting"); return; }
   if (!/^[a-z0-9_]{3,20}$/.test(username)) { showRegError("Faqat lotin harflari, raqamlar va _ (3-20 belgi)"); return; }
@@ -202,17 +204,9 @@ function doRegister() {
   if (users[username]) { showRegError("Bu nom band, boshqa nom tanlang"); return; }
 
   var phone = (document.getElementById('reg-phone').value || '').trim();
-  if (role === 'owner' && !phone) { showRegError("Iltimos, telefon raqamingizni kiriting"); return; }
+  if (!phone) { showRegError("Iltimos, telefon raqamingizni kiriting"); return; }
 
-  if (role === 'customer') {
-    // Mijoz sifatida ro'yxatdan o'tish: joylashuv so'ralmaydi, customer sahifasiga yo'naltiramiz
-    showToast && showToast('Mijoz sifatida ro\'yxatdan o\'tildi � katalogga yo\'naltirilmoqda', 'success');
-    // Open customer page in same tab
-    window.location.href = 'customer.html';
-    return;
-  }
-
-  // Ijarachi (owner) registratsiyasi � joylashuv talab qilinadi
+  // Ijarachi (owner) registratsiyasi пїЅ joylashuv talab qilinadi
   var locationAddress = (document.getElementById('reg-location-address').value || '').trim();
   var locationLat = (document.getElementById('reg-location-lat').value || '').trim();
   var locationLng = (document.getElementById('reg-location-lng').value || '').trim();
@@ -270,7 +264,7 @@ function detectRegisterLocation() {
   window._reg_samples = [];
   window._regWatchId = null;
   window._regSamplingTimer = null;
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yig�ilmoqda...'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.style.display='block'; samplingStatus.textContent='Namuna yigпїЅilmoqda...'; }
   var sampleCount = 0; var maxSamples = 10; var desiredAccuracy = 20; // meters
   try {
     window._regWatchId = navigator.geolocation.watchPosition(function(position){
@@ -279,7 +273,7 @@ function detectRegisterLocation() {
     var lng = position.coords.longitude;
     var accuracy = position.coords.accuracy || 0;
     window._reg_samples.push({lat:lat,lng:lng,accuracy:accuracy,t:Date.now()});
-    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' � aniqlik: ~' + Math.round(accuracy) + ' m';
+    if(samplingStatus) samplingStatus.textContent = 'Namuna: ' + sampleCount + ' пїЅ aniqlik: ~' + Math.round(accuracy) + ' m';
     // if we have a very good reading, stop early
     if(accuracy <= desiredAccuracy || sampleCount >= maxSamples){
       // pick best
@@ -312,7 +306,7 @@ function detectRegisterLocation() {
       var best = window._reg_samples.reduce(function(a,b){ return (a.accuracy<=b.accuracy)?a:b; });
       applyBestRegisterSample(best);
     } else {
-      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib ko�ring.';
+      if(status) status.textContent = 'Namuna olinmadi. Iltimos qayta urinib koпїЅring.';
       var retry = document.getElementById('reg-retry-btn'); if(retry) retry.style.display='';
     }
     stopRegSampling();
@@ -322,7 +316,7 @@ function detectRegisterLocation() {
 function stopRegSampling(){
   if(window._regWatchId){ navigator.geolocation.clearWatch(window._regWatchId); window._regWatchId = null; }
   if(window._regSamplingTimer){ clearTimeout(window._regSamplingTimer); window._regSamplingTimer = null; }
-  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='Yig�ish to�xtadi.'; }
+  var samplingStatus = document.getElementById('reg-sampling-status'); if(samplingStatus) { samplingStatus.textContent='YigпїЅish toпїЅxtadi.'; }
 }
 
 function applyBestRegisterSample(sample){
@@ -356,7 +350,7 @@ function initRegLeafletMap(lat,lng){
   div.style.display = '';
   if(!window._regLeafletMap){
     window._regLeafletMap = L.map('reg-location-leaflet').setView([lat,lng],15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'� OpenStreetMap contributors'}).addTo(window._regLeafletMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'пїЅ OpenStreetMap contributors'}).addTo(window._regLeafletMap);
     window._regLeafletMarker = L.marker([lat,lng],{draggable:true}).addTo(window._regLeafletMap);
     window._regLeafletMarker.on('dragend', function(e){
       var pos = e.target.getLatLng();
@@ -364,7 +358,7 @@ function initRegLeafletMap(lat,lng){
       var lngEl = document.getElementById('reg-location-lng'); if(lngEl) lngEl.value = pos.lng.toFixed(6);
       var confirmed = document.getElementById('reg-location-confirmed'); if(confirmed) confirmed.value='0';
       var confirmBtn = document.getElementById('reg-confirm-btn'); if(confirmBtn) confirmBtn.style.display='';
-      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi � joylashuvni qayta tasdiqlang.';
+      var status = document.getElementById('reg-location-status'); if(status) status.textContent='Marker surildi пїЅ joylashuvni qayta tasdiqlang.';
       refreshRegisterLocationMap();
     });
   } else {
@@ -446,7 +440,7 @@ function reverseRegisterGeocoding(lat, lng) {
 function updateUserLocationDisplay() {
   var users = getUsers();
   var userInfo = currentUser && users[currentUser] ? users[currentUser] : null;
-  var locationText = '�';
+  var locationText = 'пїЅ';
   var mapUrl = '';
   if (userInfo && userInfo.locationLat && userInfo.locationLng) {
     locationText = userInfo.locationAddress ? userInfo.locationAddress + ' (' + userInfo.locationLat + ', ' + userInfo.locationLng + ')' : userInfo.locationLat + ', ' + userInfo.locationLng;
@@ -483,7 +477,7 @@ function loginSuccess(username) {
   var users = getUsers();
   var userCategory = users[username] ? users[username].category : null;
   if (!userCategory) {
-    // Kategoriya tanlanmagan � kategoriya tanlash ekranini ko'rsat
+    // Kategoriya tanlanmagan пїЅ kategoriya tanlash ekranini ko'rsat
     document.getElementById('app').style.display = 'none';
     showCategorySelect();
   } else {
@@ -538,7 +532,7 @@ function saveCategoryAndProceed(username, categoryKey) {
 }
 
 function selectCategory(categoryKey) {
-  var validCategories = ['tools', 'cars', 'dishes', 'clothes', 'restaurants', 'stadiums', 'gaming'];
+  var validCategories = ['tools', 'cars', 'gaming'];
   if (validCategories.indexOf(categoryKey) === -1) {
     console.warn('selectCategory: noto\'g\'ri kategoriya kaliti:', categoryKey);
     return;
@@ -559,10 +553,6 @@ function doLogout() {
   currentCategory = null;
   rentals = []; tools = [];
   showLogin();
-  var aiBtn = document.getElementById('ai-chat-btn');
-  var aiPanel = document.getElementById('ai-chat-panel');
-  if (aiBtn) aiBtn.style.display = 'none';
-  if (aiPanel) aiPanel.style.display = 'none';
 }
 
 var QUESTIONS = {
@@ -730,68 +720,6 @@ function getCategoryInfo(categoryKey) {
       typeLabel: 'Turi',
       check: { col: 'Avtomobil', icon: '??', title: 'Avtomobil Ijarasi' }
     },
-    dishes: {
-      nav: 'Idish-tovoqlar',
-      title: 'Idish-tovoqlar katalogi',
-      sub: 'Ijaraga beriladigan idish-tovoqlar ro\'yxati',
-      icon: '???',
-      addLabel: '+ Idish qo\'shish',
-      addFn: 'openDishModal()',
-      itemCol: 'Idish-tovoq',
-      searchPh: 'Mijoz yoki idish nomi...',
-      emptyText: 'Idish-tovoq qo\'shilmagan',
-      modalTitle: 'Idish qo\'shish',
-      namePlaceholder: 'Idish nomi',
-      typeLabel: 'Turi',
-      check: { col: 'Idish', icon: '???', title: 'Idish-Tovoqlar' }
-    },
-    clothes: {
-      nav: 'Kiyimlar',
-      title: 'Kiyimlar katalogi',
-      sub: 'Ijaraga beriladigan kiyimlar ro\'yxati',
-      icon: '??',
-      addLabel: '+ Kiyim qo\'shish',
-      addFn: 'openClothesModal()',
-      itemCol: 'Kiyim',
-      searchPh: 'Mijoz yoki kiyim nomi...',
-      emptyText: 'Kiyim qo\'shilmagan',
-      modalTitle: 'Kiyim qo\'shish',
-      namePlaceholder: 'Kiyim nomi',
-      typeLabel: 'Turi',
-      check: { col: 'Kiyim', icon: '??', title: 'Kiyim Ijarasi' }
-    },
-    restaurants: {
-      nav: 'To\'yxonalar',
-      title: 'Restoran / To\'yhona katalogi',
-      sub: 'Ijaraga beriladigan restoran va to\'yxonalar ro\'yxati',
-      icon: '???',
-      addLabel: '+ To\'yxona qo\'shish',
-      addFn: 'openDishModal()',
-      itemCol: 'To\'yxona',
-      searchPh: 'Mijoz yoki to\'yxona nomi...',
-      emptyText: 'To\'yxona qo\'shilmagan',
-      modalTitle: 'To\'yxona qo\'shish',
-      namePlaceholder: 'To\'yxona nomi',
-      typeLabel: 'Turi',
-      typeOptions: ['Restoran', 'To\'yxona', 'Banket zali', 'Boshqa'],
-      check: { col: 'To\'yxona', icon: '???', title: 'Restoran / To\'yhona Ijarasi' }
-    },
-    stadiums: {
-      nav: 'Stadionlar',
-      title: 'Stadion / Maydon katalogi',
-      sub: 'Ijaraga beriladigan stadionlar va maydonlar ro\'yxati',
-      icon: '???',
-      addLabel: '+ Stadion qo\'shish',
-      addFn: 'openDishModal()',
-      itemCol: 'Stadion',
-      searchPh: 'Mijoz yoki stadion nomi...',
-      emptyText: 'Stadion yoki maydon qo\'shilmagan',
-      modalTitle: 'Stadion qo\'shish',
-      namePlaceholder: 'Maydon nomi',
-      typeLabel: 'Turi',
-      typeOptions: ['Stadion', 'Maydon', 'Sport majmuasi', 'Boshqa'],
-      check: { col: 'Maydon', icon: '???', title: 'Stadion / Maydon Ijarasi' }
-    },
     gaming: {
       nav: 'Gaming',
       title: 'Gaming uskunalari katalogi',
@@ -835,7 +763,7 @@ function initApp() {
 
   db.collection('shops').doc(currentUser).collection('data').doc('items').get()
     .then(function(snap) {
-      if (snap.exists && snap.data().list) {
+      if (snap.exists && snap.data().list && snap.data().list.length > 0) {
         items = snap.data().list;
         localStorage.setItem(DB_PREFIX + 'items', JSON.stringify(items));
         renderItems && renderItems();
@@ -859,8 +787,6 @@ function initApp() {
   loadAllItemImages(rawItems).then(function(loadedItems) {
     items = loadedItems;
     renderAll();
-    if (typeof initAiChat === 'function') { initAiChat(); }
-    if (typeof loadAiSettings === 'function') { loadAiSettings(); }
     if (typeof updateUserLocationDisplay === 'function') { updateUserLocationDisplay(); }
     if (typeof showDailyReportIfNeeded === 'function') { showDailyReportIfNeeded(); }
   });
@@ -1045,7 +971,7 @@ function renderPriceRows(containerId, totalId, items, hours) {
 
 /* ===== TOOL PICKER ===== */
 function buildToolPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Asbob nomi � Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Asbob nomi пїЅ Kunlik narx</div>';
   // tools bo'sh bo'lsa localStorage dan qayta yukla
   if (!tools || tools.length === 0) {
     tools = JSON.parse(localStorage.getItem(DB_PREFIX + 'tools') || '[]');
@@ -1069,7 +995,7 @@ function buildToolPicker(selectedItems) {
     var soldOut = avail <= 0 && !sel;
 
     if (soldOut) {
-      // Tugagan asbob � disabled ko'rinishda, tanlash mumkin emas
+      // Tugagan asbob пїЅ disabled ko'rinishda, tanlash mumkin emas
       html += '<div class="tool-picker-item" style="opacity:0.45">'
         + '<input type="checkbox" id="chk-'+t.id+'" disabled>'
         + '<label class="tool-picker-name" style="cursor:not-allowed">'+escHtml(t.name)
@@ -1092,7 +1018,7 @@ function buildToolPicker(selectedItems) {
 
 /* ===== CAR PICKER ===== */
 function buildCarPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Avtomobil � Kunlik narx</div>';
+  var html = '<div class="tool-picker-head">Avtomobil пїЅ Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
@@ -1133,14 +1059,15 @@ function buildCarPicker(selectedItems) {
   onPickerChange();
 }
 
-/* ===== DISH PICKER ===== */
+/* ===== GAMING ITEM PICKER ===== */
 function buildDishPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Idish nomi � Kunlik narx</div>';
+  var info = getCategoryInfo(currentCategory);
+  var html = '<div class="tool-picker-head">'+escHtml(info.namePlaceholder)+' — Kunlik narx</div>';
   if (!items || items.length === 0) {
     items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
   }
   if (!items || items.length === 0) {
-    html += '<div style="padding:14px;color:var(--muted);font-size:13px">Hali idish qo\'shilmagan. Avval Idish-tovoqlar bo\'limiga o\'ting.</div>';
+    html += '<div style="padding:14px;color:var(--muted);font-size:13px">'+escHtml(info.emptyText)+'. Avval '+escHtml(info.nav)+' bo\'limiga o\'ting.</div>';
     document.getElementById('tool-picker').innerHTML = html;
     return;
   }
@@ -1174,48 +1101,6 @@ function buildDishPicker(selectedItems) {
   onPickerChange();
 }
 
-/* ===== CLOTHES PICKER ===== */
-function buildClothesPicker(selectedItems) {
-  var html = '<div class="tool-picker-head">Kiyim nomi � Kunlik narx</div>';
-  if (!items || items.length === 0) {
-    items = JSON.parse(localStorage.getItem(DB_PREFIX + 'items') || '[]');
-  }
-  if (!items || items.length === 0) {
-    html += '<div style="padding:14px;color:var(--muted);font-size:13px">Hali kiyim qo\'shilmagan. Avval Kiyimlar bo\'limiga o\'ting.</div>';
-    document.getElementById('tool-picker').innerHTML = html;
-    return;
-  }
-  items.forEach(function(cloth) {
-    var sel     = selectedItems ? selectedItems.find(function(i) { return i.itemId === cloth.id; }) : null;
-    var checked = sel ? 'checked' : '';
-    var qtyVal  = sel ? sel.qty : 1;
-    var inUse   = getItemInUseQty(cloth.id);
-    var avail   = cloth.qty - inUse + (sel ? sel.qty : 0);
-    var soldOut = avail <= 0 && !sel;
-    var meta    = [cloth.size, cloth.type].filter(Boolean).map(escHtml).join(' / ');
-    var label   = escHtml(cloth.name) + (meta ? ' <span style="font-size:11px;color:var(--muted)">(' + meta + ')</span>' : '');
-    if (soldOut) {
-      html += '<div class="tool-picker-item" style="opacity:0.45">'
-        + '<input type="checkbox" id="chk-cloth-'+cloth.id+'" disabled>'
-        + '<label class="tool-picker-name" style="cursor:not-allowed">'+label
-        + ' <span style="font-size:11px;color:var(--red);font-weight:600">Tugagan</span></label>'
-        + '<span class="tool-picker-rate">'+fmt(cloth.dayRate||0)+'/kun</span>'
-        + '<input type="number" class="tool-picker-qty" value="0" disabled style="opacity:0.3">'
-        + '</div>';
-    } else {
-      html += '<div class="tool-picker-item">'
-        + '<input type="checkbox" id="chk-cloth-'+cloth.id+'" value="'+cloth.id+'" '+checked+' onchange="onPickerChange()">'
-        + '<label for="chk-cloth-'+cloth.id+'" class="tool-picker-name" style="cursor:pointer">'+label
-        + ' <span style="font-size:11px;color:var(--muted)">('+avail+' ta mavjud)</span></label>'
-        + '<span class="tool-picker-rate">'+fmt(cloth.dayRate||0)+'/kun</span>'
-        + '<input type="number" class="tool-picker-qty" id="qty-cloth-'+cloth.id+'" value="'+qtyVal+'" min="1" max="'+avail+'" oninput="onPickerChange()" '+(checked?'':'disabled style="opacity:0.3"')+'>'
-        + '</div>';
-    }
-  });
-  document.getElementById('tool-picker').innerHTML = html;
-  onPickerChange();
-}
-
 function onPickerChange() {
   var pickerItems = getPickerItems();
   var priceTable = document.getElementById('price-table');
@@ -1227,16 +1112,10 @@ function onPickerChange() {
       var qty = document.getElementById('qty-'+t.id);
       if (chk && qty) { qty.disabled = !chk.checked; qty.style.opacity = chk.checked ? '1' : '0.3'; }
     });
-  } else if (currentCategory === 'dishes' || currentCategory === 'restaurants' || currentCategory === 'stadiums' || currentCategory === 'gaming') {
+  } else if (currentCategory === 'gaming') {
     items.forEach(function(d) {
       var chk = document.getElementById('chk-dish-'+d.id);
       var qty = document.getElementById('qty-dish-'+d.id);
-      if (chk && qty) { qty.disabled = !chk.checked; qty.style.opacity = chk.checked ? '1' : '0.3'; }
-    });
-  } else if (currentCategory === 'clothes') {
-    items.forEach(function(c) {
-      var chk = document.getElementById('chk-cloth-'+c.id);
-      var qty = document.getElementById('qty-cloth-'+c.id);
       if (chk && qty) { qty.disabled = !chk.checked; qty.style.opacity = chk.checked ? '1' : '0.3'; }
     });
   }
@@ -1252,20 +1131,12 @@ function getPickerItems() {
         pickerItems.push({ itemId: car.id, qty: 1 });
       }
     });
-  } else if (currentCategory === 'dishes' || currentCategory === 'restaurants' || currentCategory === 'stadiums' || currentCategory === 'gaming') {
+  } else if (currentCategory === 'gaming') {
     items.forEach(function(dish) {
       var chk = document.getElementById('chk-dish-'+dish.id);
       if (chk && chk.checked) {
         var qty = parseInt(document.getElementById('qty-dish-'+dish.id).value) || 1;
         pickerItems.push({ itemId: dish.id, qty: qty });
-      }
-    });
-  } else if (currentCategory === 'clothes') {
-    items.forEach(function(cloth) {
-      var chk = document.getElementById('chk-cloth-'+cloth.id);
-      if (chk && chk.checked) {
-        var qty = parseInt(document.getElementById('qty-cloth-'+cloth.id).value) || 1;
-        pickerItems.push({ itemId: cloth.id, qty: qty });
       }
     });
   } else {
@@ -1320,10 +1191,8 @@ function _openAddModalInner(id) {
       buildToolPicker(r.items);
     } else if (currentCategory === 'cars') {
       buildCarPicker(r.items);
-    } else if (currentCategory === 'dishes' || currentCategory === 'restaurants' || currentCategory === 'stadiums' || currentCategory === 'gaming') {
+    } else if (currentCategory === 'gaming') {
       buildDishPicker(r.items);
-    } else if (currentCategory === 'clothes') {
-      buildClothesPicker(r.items);
     }
   } else {
     document.getElementById('f-name').value    = '';
@@ -1335,10 +1204,8 @@ function _openAddModalInner(id) {
       buildToolPicker(null);
     } else if (currentCategory === 'cars') {
       buildCarPicker(null);
-    } else if (currentCategory === 'dishes' || currentCategory === 'restaurants' || currentCategory === 'stadiums' || currentCategory === 'gaming') {
+    } else if (currentCategory === 'gaming') {
       buildDishPicker(null);
-    } else if (currentCategory === 'clothes') {
-      buildClothesPicker(null);
     }
   }
   document.getElementById('price-table').style.display = 'none';
@@ -1662,7 +1529,7 @@ function confirmReturn() {
     var t = tools.find(function(t) { return t.id === item.toolId; });
     return (t ? escHtml(t.name) : '?') + ' x' + item.qty;
   }).join(', ');
-  showToast(msg + ' � ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
+  showToast(msg + ' пїЅ ' + fmtDuration(hours) + ', ' + fmt(price), 'success');
 }
 
 function deleteRental(id) {
@@ -1776,14 +1643,14 @@ function getItemDisplayName(item) {
 }
 
 function itemsLabel(items) {
-  if (!items || !items.length) return '�';
+  if (!items || !items.length) return 'пїЅ';
   return items.map(function(item) {
     return getItemDisplayName(item) + (item.qty > 1 ? ' x'+item.qty : '');
   }).join(', ');
 }
 
 function itemsTags(items, returns) {
-  if (!items || !items.length) return '�';
+  if (!items || !items.length) return 'пїЅ';
   var returnedQty = {};
   if (returns && returns.length) {
     returns.forEach(function(ret) {
@@ -1821,7 +1688,7 @@ function payBadge(p) {
     : '<span class="badge unpaid">To\'lanmagan</span>';
 }
 function fmtDate(s) {
-  if (!s) return '�';
+  if (!s) return 'пїЅ';
   var d = new Date(s);
   var pad = function(n) { return String(n).padStart(2,'0'); };
   return d.toLocaleDateString('uz-UZ') + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -1908,7 +1775,7 @@ function renderAllTable() {
         + '<td>'+escHtml(r.phone)+'</td>'
         + '<td>'+itemsTags(r.items, r.returns)+'</td>'
         + '<td>'+fmtDate(r.start)+'</td>'
-        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : '�')+'</td>'
+        + '<td>'+(r.returnedAt ? fmtDate(r.returnedAt)+' <span style="color:var(--muted);font-size:11px">('+fmtDuration(r.hours||0)+')</span>' : 'пїЅ')+'</td>'
         + '<td>'+statusBadge(r.status)+'</td>'
         + '<td>'+priceCell+'</td>'
         + '<td onclick="togglePayment('+r.id+')" style="cursor:pointer">'+payBadge(r.payment)+'</td>'
@@ -2123,12 +1990,12 @@ function renderWeeklyReport() {
     var rowStyle = isToday ? ' style="background:rgba(245,166,35,0.07)"' : '';
 
     return '<tr'+rowStyle+'>'
-      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun � ':'')+label+'</span></td>'
+      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun пїЅ ':'')+label+'</span></td>'
       + '<td style="text-align:center">'+started.length+'</td>'
       + '<td style="text-align:center">'+returned.length+'</td>'
-      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'�')+'</td>'
-      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'�')+'</td>'
-      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'�')+'</td>'
+      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'пїЅ')+'</td>'
+      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'пїЅ')+'</td>'
+      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'пїЅ')+'</td>'
       + '</tr>';
   });
   tbody.innerHTML = rows.join('');
@@ -2206,7 +2073,7 @@ function openCheck(id) {
       name    = t ? escHtml(t.name) : "Noma'lum";
       dayRate = t ? (t.dayRate || 0) : 0;
     } else if (item.itemId !== undefined) {
-      // Cars / dishes / clothes
+      // Cars / gaming
       var catItem = window.items ? window.items.find(function(c) { return c.id === item.itemId; }) : null;
       if (catItem) {
         if (catItem.plateNumber) {
@@ -2244,7 +2111,7 @@ function openCheck(id) {
     + '<div style="margin-bottom:10px">'
     + '<div><b>Mijoz:</b> '+escHtml(r.name)+'</div>'
     + '<div><b>Telefon:</b> '+escHtml(r.phone)+'</div>'
-    + '<div><b>Xodim:</b> '+escHtml(r.worker||'�')+'</div>'
+    + '<div><b>Xodim:</b> '+escHtml(r.worker||'пїЅ')+'</div>'
     + '<div><b>Boshlanish:</b> '+fmtDate(r.start)+'</div>'
     + '<div><b>Qaytarilgan:</b> '+fmtDate(r.returnedAt)+'</div>'
     + '<div><b>Davomiylik:</b> '+fmtDuration(r.hours||0)+'</div>'
@@ -2326,11 +2193,10 @@ function renderCatalogPage() {
 
   if (currentCategory === 'tools') renderTools();
   else if (currentCategory === 'cars') renderCars();
-  else if (currentCategory === 'dishes' || currentCategory === 'restaurants' || currentCategory === 'stadiums' || currentCategory === 'gaming') renderDishes();
-  else if (currentCategory === 'clothes') renderClothes();
+  else if (currentCategory === 'gaming') renderDishes();
 }
 
-/* ===== ITEM IN USE (cars/dishes/clothes uchun) ===== */
+/* ===== ITEM IN USE (cars/gaming uchun) ===== */
 function getItemInUseQty(itemId, excludeRentalId) {
   var total = 0;
   rentals.forEach(function(r) {
@@ -2497,7 +2363,7 @@ function deleteCar(id) {
   showToast("Avtomobil o'chirildi", 'warning');
 }
 
-/* ===== DISHES CRUD ===== */
+/* ===== GAMING ITEMS CRUD ===== */
 var dishPendingImages = []; // [{base64, name}]
 
 function previewDishImages(input) {
@@ -2595,8 +2461,10 @@ function saveDish() {
   if (errName) errName.textContent = '';
   if (errQty)  errQty.textContent  = '';
 
+  var info = getCategoryInfo(currentCategory);
+  var itemLabel = info.itemCol || 'Item';
   if (!name) {
-    if (errName) errName.textContent = "Idish nomi kiritilishi shart";
+    if (errName) errName.textContent = itemLabel + " nomi kiritilishi shart";
     valid = false;
   }
   if (qty < 1) {
@@ -2629,137 +2497,22 @@ function saveDish() {
   }
   closeModal('dish-modal');
   renderDishes();
-  showToast("Idish saqlandi", 'success');
+  showToast(itemLabel + " saqlandi", 'success');
 }
 
 function deleteDish(id) {
+  var info = getCategoryInfo(currentCategory);
+  var itemLabel = info.itemCol || 'Item';
   if (getItemInUseQty(id) > 0) {
-    showToast("Bu idish hozir ijarada, o'chirib bo'lmaydi!", 'error');
+    showToast("Bu " + itemLabel.toLowerCase() + " hozir ijarada, o'chirib bo'lmaydi!", 'error');
     return;
   }
-  if (!confirm("Bu idishni o'chirishni xohlaysizmi?")) return;
+  if (!confirm("Bu " + itemLabel.toLowerCase() + "ni o'chirishni xohlaysizmi?")) return;
   idbDeleteImages(imgKey(id));
   items = items.filter(function(d) { return d.id !== id; });
   saveItems();
   renderDishes();
-  showToast("Idish o'chirildi", 'warning');
-}
-
-/* ===== CLOTHES CRUD ===== */
-var clothesPendingImages = []; // [{base64, name}]
-
-function previewClothesImages(input) {
-  var files = Array.from(input.files);
-  var remaining = 6 - clothesPendingImages.length;
-  if (files.length > remaining) {
-    showToast("Maksimal 6 ta rasm yuklash mumkin. Faqat birinchi " + remaining + " tasi qabul qilindi.", 'warning');
-    files = files.slice(0, remaining);
-  }
-  files.forEach(function(file) {
-    if (file.size > 2 * 1024 * 1024) { showToast(file.name + ": 2MB dan oshmasligi kerak", 'error'); return; }
-    if (!file.type.startsWith('image/')) { showToast("Faqat rasm fayllari qabul qilinadi", 'error'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      clothesPendingImages.push({ base64: e.target.result, name: file.name });
-      renderClothesImgPreview();
-    };
-    reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
-
-function renderClothesImgPreview() {
-  var preview = document.getElementById('clothes-imgs-preview');
-  if (!preview) return;
-  preview.innerHTML = clothesPendingImages.map(function(img, idx) {
-    return '<div style="position:relative;display:inline-block">'
-      + '<img src="'+img.base64+'" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:2px solid var(--border)">'
-      + '<button onclick="removeClothesImg('+idx+')" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:1;padding:0">&#10005;</button>'
-      + '</div>';
-  }).join('');
-  if (clothesPendingImages.length < 6) {
-    preview.innerHTML += '<label style="width:80px;height:80px;border:2px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:24px" title="Rasm qo\'shish"><input type="file" accept="image/*" multiple style="display:none" onchange="previewClothesImages(this)">+</label>';
-  }
-}
-
-function removeClothesImg(idx) {
-  clothesPendingImages.splice(idx, 1);
-  renderClothesImgPreview();
-}
-
-function openClothesModal(id) {
-  editItemId = id || null;
-  clothesPendingImages = [];
-  document.getElementById('clothes-modal-title').textContent = id ? 'Kiyimni tahrirlash' : "Kiyim qo'shish";
-  var errName = document.getElementById('err-clothes-name');
-  var errQty  = document.getElementById('err-clothes-qty');
-  if (errName) errName.textContent = '';
-  if (errQty)  errQty.textContent  = '';
-  if (id) {
-    var cloth = items.find(function(c) { return c.id === id; });
-    if (!cloth) return;
-    document.getElementById('clothes-name').value = cloth.name    || '';
-    document.getElementById('clothes-size').value = cloth.size    || 'M';
-    document.getElementById('clothes-type').value = cloth.type    || "Ko'ylak";
-    document.getElementById('clothes-qty').value  = cloth.qty     || '';
-    document.getElementById('clothes-day').value  = cloth.dayRate || '';
-    // Mavjud rasmlarni pending ga yuklash
-    var imgs = cloth.images || (cloth.imageBase64 ? [{ base64: cloth.imageBase64, name: 'rasm' }] : []);
-    clothesPendingImages = imgs.slice(0, 6);
-  } else {
-    document.getElementById('clothes-name').value = '';
-    document.getElementById('clothes-size').value = 'M';
-    document.getElementById('clothes-type').value = "Ko'ylak";
-    document.getElementById('clothes-qty').value  = '';
-    document.getElementById('clothes-day').value  = '';
-  }
-  renderClothesImgPreview();
-  document.getElementById('clothes-modal').classList.add('open');
-}
-
-function saveClothes() {
-  var name    = document.getElementById('clothes-name').value.trim();
-  var size    = document.getElementById('clothes-size').value;
-  var type    = document.getElementById('clothes-type').value;
-  var qty     = parseInt(document.getElementById('clothes-qty').value)   || 0;
-  var dayRate = parseFloat(document.getElementById('clothes-day').value) || 0;
-  var valid   = true;
-  var errName = document.getElementById('err-clothes-name');
-  var errQty  = document.getElementById('err-clothes-qty');
-  if (errName) errName.textContent = '';
-  if (errQty)  errQty.textContent  = '';
-  if (!name) { if (errName) errName.textContent = "Kiyim nomi kiritilishi shart"; valid = false; }
-  if (qty < 1) { if (errQty) errQty.textContent = "Miqdor kamida 1 bo'lishi kerak"; valid = false; }
-  if (dayRate < 0) dayRate = 0;
-  if (!valid) return;
-
-  var images = clothesPendingImages.slice(0, 6);
-  var imageBase64 = images.length > 0 ? images[0].base64 : null;
-
-  if (editItemId) {
-    var idx = items.findIndex(function(c) { return c.id === editItemId; });
-    if (idx !== -1) items[idx] = Object.assign({}, items[idx], {
-      name:name, size:size, type:type, qty:qty, dayRate:dayRate,
-      images: images,
-      imageBase64: imageBase64 !== null ? imageBase64 : items[idx].imageBase64
-    });
-  } else {
-    items.push({ id: Date.now(), name:name, size:size, type:type, qty:qty, dayRate:dayRate, images:images, imageBase64:imageBase64 });
-  }
-  try { saveItems(); } catch(e) { showToast("Xotira to'lib qoldi, eski ma'lumotlarni o'chiring", 'error'); return; }
-  closeModal('clothes-modal');
-  renderClothes();
-  showToast("Kiyim saqlandi", 'success');
-}
-
-function deleteClothes(id) {
-  if (getItemInUseQty(id) > 0) { showToast("Bu kiyim hozir ijarada, o'chirib bo'lmaydi!", 'error'); return; }
-  if (!confirm("Bu kiyimni o'chirishni xohlaysizmi?")) return;
-  idbDeleteImages(imgKey(id));
-  items = items.filter(function(c) { return c.id !== id; });
-  saveItems();
-  renderClothes();
-  showToast("Kiyim o'chirildi", 'warning');
+  showToast(itemLabel + " o'chirildi", 'warning');
 }
 
 function carImgGallery(car) {
@@ -2779,14 +2532,11 @@ function carImgGallery(car) {
 }
 
 function carGalNav(id, dir) {
-  // id formatlar: 'gal-{carId}', 'gal-dish-{dishId}', 'gal-cloth-{clothId}'
+  // id formatlar: 'gal-{carId}', 'gal-dish-{dishId}'
   var item = null;
   if (id.startsWith('gal-dish-')) {
     var dishId = parseInt(id.replace('gal-dish-', ''));
     item = items.find(function(c) { return c.id === dishId; });
-  } else if (id.startsWith('gal-cloth-')) {
-    var clothId = parseInt(id.replace('gal-cloth-', ''));
-    item = items.find(function(c) { return c.id === clothId; });
   } else {
     item = items.find(function(c) { return 'gal-'+c.id === id; });
   }
@@ -2825,7 +2575,7 @@ function renderCars() {
     var inUse  = getItemInUseQty(car.id) > 0;
     var imgs   = car.images && car.images.length ? car.images : (car.imageBase64 ? [{base64: car.imageBase64}] : []);
     var galId  = 'gal-'+car.id;
-    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' � ');
+    var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' пїЅ ');
 
     // Rasm qismi
     var imgSection;
@@ -2859,7 +2609,7 @@ function renderCars() {
       + '<div class="car-card-body">'
       + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
       + '<div class="car-card-name">'+escHtml(car.brand)+(car.model?' '+escHtml(car.model):'')+'</div>'
-      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' � '+meta:'')+'</div>'
+      + '<div class="car-card-plate">'+escHtml(car.plateNumber)+(meta?' пїЅ '+meta:'')+'</div>'
       + '<div class="car-card-price">'+Number(car.dayRate||0).toLocaleString()+' so\'m/kun</div>'
       + '<div class="car-card-actions">'
       + '<button class="car-btn-bron" onclick="openCarModal('+car.id+')">&#9998; Tahrirlash</button>'
@@ -2942,72 +2692,6 @@ function renderDishes() {
   cardsEl.style.display = 'none';
   grid.innerHTML = cardsHtml;
 }
-function renderClothes() {
-  var grid    = document.getElementById('tools-grid');
-  var cardsEl = document.getElementById('tools-cards');
-  if (!grid || !cardsEl) return;
-  if (!items.length) {
-    grid.innerHTML    = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">&#129333;</div>Kiyim qo\'shilmagan</div>';
-    cardsEl.innerHTML = '<div class="empty"><div class="empty-icon">&#129333;</div>Kiyim qo\'shilmagan</div>';
-    cardsEl.style.display = '';
-    grid.className = 'tools-grid cars-grid';
-    return;
-  }
-
-  var cardsHtml = items.map(function(cloth) {
-    var inUseQty = getItemInUseQty(cloth.id);
-    var avail    = (cloth.qty || 0) - inUseQty;
-    var inUse    = inUseQty > 0;
-    var imgs     = cloth.images && cloth.images.length ? cloth.images : (cloth.imageBase64 ? [{base64: cloth.imageBase64}] : []);
-    var galId    = 'gal-cloth-'+cloth.id;
-    var meta     = [cloth.size, cloth.type].filter(Boolean).map(escHtml).join(' / ');
-
-    // Rasm qismi
-    var imgSection;
-    if (!imgs.length) {
-      imgSection = '<div class="car-card-img-placeholder">&#129333;</div>';
-    } else if (imgs.length === 1) {
-      imgSection = '<img class="car-card-img" src="'+imgs[0].base64+'" alt="rasm">';
-    } else {
-      imgSection = '<div class="car-gal-wrap" id="'+galId+'">'
-        + '<img class="car-card-img" id="'+galId+'-img" src="'+imgs[0].base64+'" data-idx="0" alt="rasm">'
-        + '<button class="car-gal-btn car-gal-prev" onclick="carGalNav(\''+galId+'\',-1)">&#8249;</button>'
-        + '<button class="car-gal-btn car-gal-next" onclick="carGalNav(\''+galId+'\',1)">&#8250;</button>'
-        + '</div>';
-    }
-
-    // Dots
-    var dotsHtml = '';
-    if (imgs.length > 1) {
-      dotsHtml = '<div class="car-gal-dots">'
-        + imgs.map(function(_, i) {
-            return '<span id="'+galId+'-dot-'+i+'" onclick="carGalNav(\''+galId+'\','+i+')" class="car-gal-dot'+(i===0?' active':'')+'" ></span>';
-          }).join('')
-        + '</div>';
-    } else if (imgs.length === 1) {
-      dotsHtml = '<div class="car-gal-dots"><span class="car-gal-dot active"></span></div>';
-    }
-
-    return '<div class="car-card">'
-      + imgSection
-      + dotsHtml
-      + '<div class="car-card-body">'
-      + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
-      + '<div class="car-card-name">'+escHtml(cloth.name)+'</div>'
-      + '<div class="car-card-plate">'+(meta ? meta+' &middot; ' : '')+'Jami: '+cloth.qty+' | Mavjud: '+avail+'</div>'
-      + '<div class="car-card-price">'+Number(cloth.dayRate||0).toLocaleString()+' so\'m/kun</div>'
-      + '<div class="car-card-actions">'
-      + '<button class="car-btn-bron" onclick="openClothesModal('+cloth.id+')">&#9998; Tahrirlash</button>'
-      + '</div>'
-      + '<button onclick="deleteClothes('+cloth.id+')" style="margin-top:6px;background:none;border:none;color:#e74c3c;font-size:12px;cursor:pointer;text-align:left;padding:0">&#10005; O\'chirish</button>'
-      + '</div>'
-      + '</div>';
-  }).join('');
-
-  grid.className = 'tools-grid cars-grid';
-  cardsEl.style.display = 'none';
-  grid.innerHTML = cardsHtml;
-}
 
 /* ===== PAGE NAVIGATION ===== */
 function showPage(id, el) {
@@ -3020,10 +2704,10 @@ function showPage(id, el) {
     setTimeout(function() {
       renderWorkerSettings();
       var el = document.getElementById('settings-username');
-      if (el) el.textContent = currentUser || '�';
+      if (el) el.textContent = currentUser || 'пїЅ';
       var catEl = document.getElementById('settings-category');
       if (catEl) {
-        catEl.textContent = getCategoryInfo(currentCategory).nav || '�';
+        catEl.textContent = getCategoryInfo(currentCategory).nav || 'пїЅ';
       }
     }, 0);
   }
@@ -3086,7 +2770,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Scroll tugmalari � main elementni scroll qilish
+// Scroll tugmalari пїЅ main elementni scroll qilish
 function scrollMainBy(amount) {
   var mainEl = document.querySelector('main');
   if (mainEl) {
@@ -3095,3 +2779,4 @@ function scrollMainBy(amount) {
     window.scrollBy({ top: amount, behavior: 'smooth' });
   }
 }
+
