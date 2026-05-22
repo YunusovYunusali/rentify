@@ -38,12 +38,10 @@
         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" oninput="clearLoginError()" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Kirish</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="showRegister()">Yangi hisob yaratish</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="window.location.href='https://mrentify.vercel.app'">Mijozlar uchun</button>
       <div class="login-divider">yoki</div>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showRegister()">Yangi hisob yaratish</button>
       <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;font-size:12px;color:var(--muted)" onclick="showResetPassword()">Parolni unutdim</button>
-      <div style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center">
-        <a href="customer.html" style="color:var(--accent);text-decoration:none;">Mijozlar uchun sahifani ko'rish</a>
-      </div>
     </div>
   </div>
 </div>
@@ -52,44 +50,21 @@
       (function(){
         function setRoleUI(role){
           var ownerCard = document.getElementById('role-owner');
-          var customerCard = document.getElementById('role-customer');
           var locSection = document.getElementById('reg-location-section');
           var phoneSection = document.getElementById('reg-phone-section');
           var nameLabel = document.getElementById('reg-username-label');
           var nameInput = document.getElementById('reg-username');
           var nameHelp = document.getElementById('reg-username-help');
-          if(role==='customer'){
-            ownerCard.classList.remove('selected');
-            customerCard.classList.add('selected');
-            var r = document.querySelector('input[name="reg-role"][value="customer"]'); if(r) r.checked = true;
-            if(locSection) locSection.style.display = 'none';
-            if(phoneSection) phoneSection.style.display = 'none';
-            if(nameLabel) nameLabel.textContent = 'Ism yoki Familiya';
-            if(nameInput) nameInput.placeholder = 'Ism Familiya';
-            if(nameHelp) nameHelp.textContent = 'Ism yoki familiyangizni kiriting (lotin harflarida)';
-          } else {
-            customerCard.classList.remove('selected');
-            ownerCard.classList.add('selected');
-            var r2 = document.querySelector('input[name="reg-role"][value="owner"]'); if(r2) r2.checked = true;
-            if(locSection) locSection.style.display = '';
-            if(phoneSection) phoneSection.style.display = '';
-            if(nameLabel) nameLabel.textContent = 'Magazin / Foydalanuvchi nomi';
-            if(nameInput) nameInput.placeholder = 'magazin_nomi';
-            if(nameHelp) nameHelp.textContent = 'Faqat lotin harflari, raqamlar va _ belgisi';
-          }
+          if(ownerCard) ownerCard.classList.add('selected');
+          if(locSection) locSection.style.display = '';
+          if(phoneSection) phoneSection.style.display = '';
+          if(nameLabel) nameLabel.textContent = 'Magazin / Foydalanuvchi nomi';
+          if(nameInput) nameInput.placeholder = 'magazin_nomi';
+          if(nameHelp) nameHelp.textContent = 'Faqat lotin harflari, raqamlar va _ belgisi';
+          var r2 = document.querySelector('input[name="reg-role"][value="owner"]'); if(r2) r2.checked = true;
         }
         document.addEventListener('DOMContentLoaded', function(){
-          var cards = document.querySelectorAll('.role-card');
-          cards.forEach(function(card){
-            card.addEventListener('click', function(e){
-              var role = card.getAttribute('data-role');
-              setRoleUI(role);
-            });
-            card.addEventListener('keyup', function(e){ if(e.key==='Enter' || e.key===' ') { var role = card.getAttribute('data-role'); setRoleUI(role); } });
-          });
-          // initialize based on checked radio
-          var checked = document.querySelector('input[name="reg-role"]:checked');
-          setRoleUI((checked && checked.value) ? checked.value : 'owner');
+          setRoleUI('owner');
         });
         // expose for debugging
         window.setRegRoleUI = setRoleUI;
@@ -105,30 +80,6 @@
         <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;color:var(--accent)">Rent<span style="color:var(--text)">ify</span></div>
       </div>
       <div class="login-sub">Yangi hisob yaratish</div>
-      <style>
-        .reg-role-cards{display:flex;gap:12px;margin:16px 0 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:8px;}
-        .role-card{flex:1;min-width:0;padding:14px 16px;border-radius:14px;border:1px solid transparent;background:transparent;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:all 0.2s ease;color:var(--muted);}
-        .role-card h4{margin:0;font-size:14px;color:var(--text);}
-        .role-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.3;}
-        .role-card.selected{background:linear-gradient(180deg, rgba(245,166,35,0.18), rgba(245,166,35,0.08));border-color:rgba(245,166,35,0.25);box-shadow:0 14px 25px rgba(0,0,0,0.18);color:var(--text);}
-        .role-card.selected h4{color:#fff;}
-        .role-card:hover{background:rgba(255,255,255,0.06);}
-        .role-card:focus-visible{outline:2px solid rgba(245,166,35,0.9);outline-offset:2px;}
-        .role-radio{display:none}
-      </style>
-      <div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px">Ro'yxat turi:</div>
-      <div class="reg-role-cards">
-        <label class="role-card" data-role="owner" id="role-owner" role="button" tabindex="0">
-          <input type="radio" name="reg-role" value="owner" class="role-radio" checked>
-          <h4>Ijarachi</h4>
-          <p>Do'kon ochish va mahsulot qo'shish</p>
-        </label>
-        <label class="role-card" data-role="customer" id="role-customer" role="button" tabindex="0">
-          <input type="radio" name="reg-role" value="customer" class="role-radio">
-          <h4>Mijoz</h4>
-          <p>Faqat ijaralar qidirish — joylashuv so'ralmaydi</p>
-        </label>
-      </div>
       <div id="reg-error" class="login-error" style="display:none"></div>
       <div class="form-group" style="margin-bottom:14px">
         <label id="reg-username-label">Magazin / Foydalanuvchi nomi</label>
@@ -194,9 +145,6 @@
       <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doRegister()">Ro'yxatdan o'tish</button>
       <div class="login-divider">yoki</div>
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showLogin()">Hisobim bor — Kirish</button>
-      <div style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center">
-        <a href="customer.html" style="color:var(--accent);text-decoration:none;">Mijozlar uchun sahifani ko'rish</a>
-      </div>
     </div>
   </div>
 </div>
@@ -254,26 +202,6 @@
       <div class="cat-hero-item" onclick="selectCategory('cars')">
         <div class="cat-hero-icon">🚗</div>
         <div class="cat-hero-label">AVTOMOBILLAR</div>
-      </div>
-
-      <div class="cat-hero-item" onclick="selectCategory('dishes')">
-        <div class="cat-hero-icon">🍽️</div>
-        <div class="cat-hero-label">IDISH-TOVOQLAR</div>
-      </div>
-
-      <div class="cat-hero-item" onclick="selectCategory('clothes')">
-        <div class="cat-hero-icon">👗</div>
-        <div class="cat-hero-label">KIYIMLAR</div>
-      </div>
-
-      <div class="cat-hero-item" onclick="selectCategory('restaurants')">
-        <div class="cat-hero-icon">🍴</div>
-        <div class="cat-hero-label">TO'YXONA / RESTORAN</div>
-      </div>
-
-      <div class="cat-hero-item" onclick="selectCategory('stadiums')">
-        <div class="cat-hero-icon">🏟️</div>
-        <div class="cat-hero-label">STADION / MAYDON</div>
       </div>
 
       <div class="cat-hero-item" onclick="selectCategory('gaming')">
@@ -542,29 +470,6 @@
             <iframe id="settings-location-map" src="" style="border:1px solid var(--border);border-radius:12px;width:100%;height:180px;display:none;margin-bottom:14px;"></iframe>
             <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="resetReport()">&#8635; Hisobotni tozalash</button>
             <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Barcha ijara tarixi o'chiriladi, asboblar saqlanadi</div>
-          </div>
-        </div>
-
-        <div class="table-card" style="display:none">
-          <div class="table-header">
-            <div class="table-title">🤖 AI Yordamchi sozlamalari</div>
-          </div>
-          <div style="padding:16px 20px" id="ai-settings-section">
-            <div style="font-size:13px;color:var(--muted);margin-bottom:12px">OpenAI API kaliti (ixtiyoriy)</div>
-            <div class="form-group" style="margin-bottom:12px">
-              <label>API kalit</label>
-              <input type="password" id="ai-api-key-input" placeholder="sk-..." autocomplete="off">
-              <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block">ChatGPT orqali chuqurroq tahlil uchun</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-              <label style="text-transform:none;font-size:13px;color:var(--text);font-weight:500">API rejimini yoqish</label>
-              <input type="checkbox" id="ai-api-enabled-toggle" style="width:18px;height:18px;accent-color:var(--accent)">
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-primary btn-sm" onclick="saveAiSettings()" style="flex:1;justify-content:center">&#10003; Saqlash</button>
-              <button class="btn btn-ghost btn-sm" onclick="testAiApiConnection()" style="flex:1;justify-content:center">&#8635; Tekshirish</button>
-            </div>
-            <div id="ai-settings-status" style="font-size:12px;margin-top:10px;color:var(--muted)"></div>
           </div>
         </div>
 
@@ -930,50 +835,11 @@
   window.db = firebase.firestore();
 </script>
 <script src="app.js"></script>
-<script src="ai-chat.js"></script>
 </div><!-- /app -->
 
 <div class="scroll-controls">
   <button class="scroll-btn" id="scroll-up-btn" onclick="scrollMainBy(-200)" aria-label="Yuqoriga">&#8679;</button>
   <button class="scroll-btn" id="scroll-down-btn" onclick="scrollMainBy(200)" aria-label="Pastga">&#8681;</button>
-</div>
-
-<!-- AI YORDAMCHI CHATBOT -->
-<button id="ai-chat-btn" onclick="openAiChat()" aria-label="AI Yordamchi" title="AI Yordamchi">
-  <span style="font-size:22px">🤖</span>
-</button>
-
-<div id="ai-chat-panel" role="dialog" aria-label="AI Yordamchi suhbat oynasi">
-  <div id="ai-chat-header">
-    <div class="ai-chat-title">
-      <span style="font-size:18px">🤖</span>
-      <span>AI Yordamchi</span>
-    </div>
-    <div class="ai-chat-header-actions">
-      <button class="ai-chat-clear-btn" onclick="clearAiChat()" title="Suhbatni tozalash" aria-label="Suhbatni tozalash">🗑</button>
-      <button class="ai-chat-close-btn" onclick="closeAiChat()" title="Yopish" aria-label="Yopish">✕</button>
-    </div>
-  </div>
-  <div id="ai-chat-messages" role="log" aria-live="polite"></div>
-  <div id="ai-chat-quick">
-    <div class="ai-quick-label">Tezkor savollar:</div>
-    <div class="ai-quick-btns">
-      <button class="ai-quick-btn" onclick="sendAiMessage('Bugungi daromad qancha?')">💰 Bugungi daromad</button>
-      <button class="ai-quick-btn" onclick="sendAiMessage('Kimlar qarzdor?')">⚠️ Qarzdorlar</button>
-      <button class="ai-quick-btn" onclick="sendAiMessage('Hozir faol ijaralar nechta?')">📋 Faol ijaralar</button>
-      <button class="ai-quick-btn" onclick="sendAiMessage('Qaytarishlar qachon?')">📅 Qaytarishlar</button>
-      <button class="ai-quick-btn" onclick="sendAiMessage('Inventar holati qanday?')">📦 Inventar</button>
-      <button class="ai-quick-btn" onclick="sendAiMessage('Eng ko\'p ijaralangan nima?')">🏆 Eng ko'p ijaralangan</button>
-    </div>
-  </div>
-  <div id="ai-chat-input-row">
-    <input type="text" id="ai-chat-input" placeholder="Savol yozing..." autocomplete="off"
-      onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendAiMessage(this.value); }"
-      aria-label="Savol kiriting">
-    <button id="ai-chat-send-btn" onclick="sendAiMessage(document.getElementById('ai-chat-input').value)" aria-label="Yuborish">
-      ➤
-    </button>
-  </div>
 </div>
 
 </body></html>
