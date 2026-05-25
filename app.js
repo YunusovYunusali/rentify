@@ -200,14 +200,15 @@ function doRegister() {
   var locationLat = (document.getElementById('reg-location-lat').value || '').trim();
   var locationLng = (document.getElementById('reg-location-lng').value || '').trim();
   var locationConfirmed = (document.getElementById('reg-location-confirmed').value || '0').trim();
-  if (!locationAddress || !locationLat || !locationLng) {
-    showRegError("Do'kon joylashuvi, shuningdek Lat va Lng majburiy.");
-    return;
-  }
-  if (locationConfirmed !== '1') {
-    showRegError("Iltimos, joylashuvni tasdiqlang (Joylashuvni tasdiqlash tugmasi).");
-    return;
-  }
+  // Location checks disabled: make location optional during registration
+  // if (!locationAddress || !locationLat || !locationLng) {
+  //   showRegError("Do'kon joylashuvi, shuningdek Lat va Lng majburiy.");
+  //   return;
+  // }
+  // if (locationConfirmed !== '1') {
+  //   showRegError("Iltimos, joylashuvni tasdiqlang (Joylashuvni tasdiqlash tugmasi).");
+  //   return;
+  // }
 
   users[username] = {
     hash: simpleHash(password),
@@ -605,6 +606,47 @@ function doResetPassword() {
   setTimeout(function() {
     document.getElementById('login-username').value = username;
   }, 100);
+}
+
+function detectAndUpdateLocation() {
+  var status = document.getElementById('settings-location-status');
+  if (!navigator.geolocation) {
+    if (status) status.textContent = 'Geolokatsiya qo\'llab-quvvatlanmaydi.';
+    return;
+  }
+  if (status) status.textContent = '📡 Joylashuv aniqlanmoqda...';
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(6);
+    var lng = pos.coords.longitude.toFixed(6);
+    fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng)
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var address = data.display_name || (lat + ', ' + lng);
+        var users = getUsers();
+        if (users[currentUser]) {
+          users[currentUser].locationLat = lat;
+          users[currentUser].locationLng = lng;
+          users[currentUser].locationAddress = address;
+          users[currentUser].locationLocked = true;
+          saveUsers(users);
+          updateUserLocationDisplay();
+          if (status) status.textContent = '✅ Joylashuv saqlandi!';
+          showToast('Joylashuv yangilandi', 'success');
+        }
+      }).catch(function() {
+        var users = getUsers();
+        if (users[currentUser]) {
+          users[currentUser].locationLat = lat;
+          users[currentUser].locationLng = lng;
+          users[currentUser].locationAddress = lat + ', ' + lng;
+          saveUsers(users);
+          updateUserLocationDisplay();
+          if (status) status.textContent = '✅ Koordinatalar saqlandi.';
+        }
+      });
+  }, function(err) {
+    if (status) status.textContent = '❌ Joylashuvni aniqlab bo\'lmadi: ' + err.message;
+  }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
 function checkSession() {
@@ -1554,6 +1596,13 @@ function togglePayment(id) {
 
 /* ===== ASBOB MODAL ===== */
 function openToolModal(id) {
+  var userInfo = getUsers()[currentUser] || {};
+  if (!id && (!userInfo.locationLat || !userInfo.locationLng)) {
+    if (confirm("Joylashuv aniqlanmagan. Sozlamalarga o'tib joylashuvni kiriting?")) {
+      showPage('sozlamalar', null);
+    }
+    return;
+  }
   editToolId = id || null;
   document.getElementById('tool-modal-title').textContent = id ? 'Asbobni tahrirlash' : "Asbob qo'shish";
   var errEl = document.getElementById('err-tname');
@@ -2245,6 +2294,13 @@ function removeCarImg(idx) {
 }
 
 function openCarModal(id) {
+  var userInfo = getUsers()[currentUser] || {};
+  if (!id && (!userInfo.locationLat || !userInfo.locationLng)) {
+    if (confirm("Joylashuv aniqlanmagan. Sozlamalarga o'tib joylashuvni kiriting?")) {
+      showPage('sozlamalar', null);
+    }
+    return;
+  }
   editItemId = id || null;
   carPendingImages = [];
   document.getElementById('car-modal-title').textContent = id ? 'Avtomobilni tahrirlash' : "Avtomobil qo'shish";
@@ -2395,6 +2451,13 @@ function removeDishImg(idx) {
 }
 
 function openDishModal(id) {
+  var userInfo = getUsers()[currentUser] || {};
+  if (!id && (!userInfo.locationLat || !userInfo.locationLng)) {
+    if (confirm("Joylashuv aniqlanmagan. Sozlamalarga o'tib joylashuvni kiriting?")) {
+      showPage('sozlamalar', null);
+    }
+    return;
+  }
   editItemId = id || null;
   dishPendingImages = [];
   var info = getCategoryInfo(currentCategory);
@@ -2698,6 +2761,8 @@ function showPage(id, el) {
       if (catEl) {
         catEl.textContent = getCategoryInfo(currentCategory).nav || 'пїЅ';
       }
+      // Update location display in settings
+      updateUserLocationDisplay();
     }, 0);
   }
   if (id === 'asboblar') {
