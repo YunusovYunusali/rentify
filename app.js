@@ -1,17 +1,6 @@
 ﻿// ImgBB rasm yuklash
 async function uploadImageToImgBB(base64data) {
-  try {
-    var base64 = base64data.replace(/^data:image\/[a-z]+;base64,/, '');
-    var formData = new FormData();
-    formData.append('image', base64);
-    var res = await fetch('https://api.imgbb.com/1/upload?key=079bd6f790fa3a7e6aa29657115e7585', {
-      method: 'POST',
-      body: formData
-    });
-    var json = await res.json();
-    if (json.success) return json.data.url;
-  } catch(e) { console.warn('ImgBB xato:', e); }
-  return base64data; // xato bo'lsa base64 ni qaytaradi
+  return base64data;
 }
 
 'use strict';
@@ -2756,8 +2745,6 @@ document.addEventListener('click', function(e) {
     popup.classList.remove('open');
   }
 });
-
-checkSession();
 
 checkSession();
 

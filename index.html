@@ -822,6 +822,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDT_D7qXJ8wwPpLPt0BqkmIwugAadFIamI",
@@ -833,6 +834,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   window.db = firebase.firestore();
+  window.firebaseStorage = firebase.storage();
 </script>
 <script src="app.js"></script>
 </div><!-- /app -->
