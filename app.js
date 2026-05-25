@@ -2700,7 +2700,17 @@ function renderDishes() {
     // Rasm qismi
     var imgSection;
     if (!imgs.length) {
-      imgSection = '<div class="car-card-img-placeholder">&#127859;</div>';
+      var dname = (dish.name || '').toLowerCase();
+      var dtype = (dish.type || '').toLowerCase();
+      var dicon = '🎮';
+      if (dname.includes('playstation') || dname.includes('ps5') || dname.includes('ps4') || dname.includes('ps ') || dtype.includes('playstation')) dicon = '🎮';
+      else if (dname.includes('kompyuter') || dname.includes('computer') || dname.includes('pc') || dtype.includes('kompyuter')) dicon = '🖥️';
+      else if (dname.includes('laptop') || dname.includes('noutbuk') || dtype.includes('laptop')) dicon = '💻';
+      else if (dname.includes('monitor') || dtype.includes('monitor')) dicon = '🖥️';
+      else if (dname.includes('telefon') || dname.includes('phone') || dtype.includes('telefon')) dicon = '📱';
+      else if (dname.includes('kamera') || dname.includes('camera') || dtype.includes('kamera')) dicon = '📷';
+      else if (dname.includes('xbox') || dtype.includes('xbox')) dicon = '🎮';
+      imgSection = '<div class="car-card-img-placeholder" style="font-size:64px;display:flex;align-items:center;justify-content:center;height:100%">'+dicon+'</div>';
     } else if (imgs.length === 1) {
       imgSection = '<img class="car-card-img" src="'+imgs[0].base64+'" alt="rasm">';
     } else {
