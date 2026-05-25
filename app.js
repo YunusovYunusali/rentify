@@ -196,10 +196,9 @@ function doRegister() {
   if (!phone) { showRegError("Iltimos, telefon raqamingizni kiriting"); return; }
 
   // Ijarachi (owner) registratsiyasi пїЅ joylashuv talab qilinadi
-  var locationAddress = (document.getElementById('reg-location-address').value || '').trim();
-  var locationLat = (document.getElementById('reg-location-lat').value || '').trim();
-  var locationLng = (document.getElementById('reg-location-lng').value || '').trim();
-  var locationConfirmed = (document.getElementById('reg-location-confirmed').value || '0').trim();
+  var locationAddress = '';
+  var locationLat = '';
+  var locationLng = '';
   // Location checks disabled: make location optional during registration
   // if (!locationAddress || !locationLat || !locationLng) {
   //   showRegError("Do'kon joylashuvi, shuningdek Lat va Lng majburiy.");
