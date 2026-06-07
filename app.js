@@ -2624,38 +2624,13 @@ function renderCars() {
 
   var cardsHtml = items.map(function(car) {
     var inUse  = getItemInUseQty(car.id) > 0;
-    var imgs   = car.images && car.images.length ? car.images : (car.imageBase64 ? [{base64: car.imageBase64}] : []);
-    var galId  = 'gal-'+car.id;
     var meta   = [car.year ? String(car.year) : '', car.color ? escHtml(car.color) : ''].filter(Boolean).join(' пїЅ ');
 
-    // Rasm qismi
-    var imgSection;
-    if (!imgs.length) {
-      imgSection = '<div class="car-card-img-placeholder">&#128663;</div>';
-    } else if (imgs.length === 1) {
-      imgSection = '<img class="car-card-img" src="'+imgs[0].base64+'" alt="rasm">';
-    } else {
-      imgSection = '<div class="car-gal-wrap" id="'+galId+'">'
-        + '<img class="car-card-img" id="'+galId+'-img" src="'+imgs[0].base64+'" data-idx="0" alt="rasm">'
-        + '<button class="car-gal-btn car-gal-prev" onclick="carGalNav(\''+galId+'\',-1)">&#8249;</button>'
-        + '<button class="car-gal-btn car-gal-next" onclick="carGalNav(\''+galId+'\',1)">&#8250;</button>'
-        + '</div>';
-    }
-
-    // Dots rasm tashqarisida
+    var iconSection = '<div class="car-card-img-placeholder">🚗</div>';
     var dotsHtml = '';
-    if (imgs.length > 1) {
-      dotsHtml = '<div class="car-gal-dots">'
-        + imgs.map(function(_, i) {
-            return '<span id="'+galId+'-dot-'+i+'" onclick="carGalNav(\''+galId+'\','+i+')" class="car-gal-dot'+(i===0?' active':'')+'" ></span>';
-          }).join('')
-        + '</div>';
-    } else if (imgs.length === 1) {
-      dotsHtml = '<div class="car-gal-dots"><span class="car-gal-dot active"></span></div>';
-    }
 
     return '<div class="car-card">'
-      + imgSection
+      + iconSection
       + dotsHtml
       + '<div class="car-card-body">'
       + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
@@ -2694,47 +2669,12 @@ function renderDishes() {
     var inUseQty = getItemInUseQty(dish.id);
     var avail    = (dish.qty || 0) - inUseQty;
     var inUse    = inUseQty > 0;
-    var imgs     = dish.images && dish.images.length ? dish.images : (dish.imageBase64 ? [{base64: dish.imageBase64}] : []);
-    var galId    = 'gal-dish-'+dish.id;
 
-    // Rasm qismi
-    var imgSection;
-    if (!imgs.length) {
-      var dname = (dish.name || '').toLowerCase();
-      var dtype = (dish.type || '').toLowerCase();
-      var dicon = '🎮';
-      if (dname.includes('playstation') || dname.includes('ps5') || dname.includes('ps4') || dname.includes('ps ') || dtype.includes('playstation')) dicon = '🎮';
-      else if (dname.includes('kompyuter') || dname.includes('computer') || dname.includes('pc') || dtype.includes('kompyuter')) dicon = '🖥️';
-      else if (dname.includes('laptop') || dname.includes('noutbuk') || dtype.includes('laptop')) dicon = '💻';
-      else if (dname.includes('monitor') || dtype.includes('monitor')) dicon = '🖥️';
-      else if (dname.includes('telefon') || dname.includes('phone') || dtype.includes('telefon')) dicon = '📱';
-      else if (dname.includes('kamera') || dname.includes('camera') || dtype.includes('kamera')) dicon = '📷';
-      else if (dname.includes('xbox') || dtype.includes('xbox')) dicon = '🎮';
-      imgSection = '<div class="car-card-img-placeholder" style="font-size:64px;display:flex;align-items:center;justify-content:center;height:100%">'+dicon+'</div>';
-    } else if (imgs.length === 1) {
-      imgSection = '<img class="car-card-img" src="'+imgs[0].base64+'" alt="rasm">';
-    } else {
-      imgSection = '<div class="car-gal-wrap" id="'+galId+'">'
-        + '<img class="car-card-img" id="'+galId+'-img" src="'+imgs[0].base64+'" data-idx="0" alt="rasm">'
-        + '<button class="car-gal-btn car-gal-prev" onclick="carGalNav(\''+galId+'\',-1)">&#8249;</button>'
-        + '<button class="car-gal-btn car-gal-next" onclick="carGalNav(\''+galId+'\',1)">&#8250;</button>'
-        + '</div>';
-    }
-
-    // Dots
+    var iconSection = '<div class="car-card-img-placeholder">💻</div>';
     var dotsHtml = '';
-    if (imgs.length > 1) {
-      dotsHtml = '<div class="car-gal-dots">'
-        + imgs.map(function(_, i) {
-            return '<span id="'+galId+'-dot-'+i+'" onclick="carGalNav(\''+galId+'\','+i+')" class="car-gal-dot'+(i===0?' active':'')+'" ></span>';
-          }).join('')
-        + '</div>';
-    } else if (imgs.length === 1) {
-      dotsHtml = '<div class="car-gal-dots"><span class="car-gal-dot active"></span></div>';
-    }
 
     return '<div class="car-card">'
-      + imgSection
+      + iconSection
       + dotsHtml
       + '<div class="car-card-body">'
       + '<div class="car-card-category-line">'+(inUse ? '<span class="car-badge-status car-badge-busy">Ijarada</span>' : '<span class="car-badge-status car-badge-free">Bo\'sh</span>')+'</div>'
