@@ -949,50 +949,55 @@ function fmtDuration(hours) {
   return h + ' soat ' + m + ' daqiqa';
 }
 
-function calcRentalPrice(itemsList, hours) {
-  var total = 0;
-  itemsList.forEach(function(item) {
-    var dayRate = 0;
-    if (item.toolId !== undefined) {
-      var tool = tools.find(function(t) { return t.id === item.toolId; });
-      if (tool) dayRate = tool.dayRate || 0;
-    } else if (item.itemId !== undefined) {
-      var catItem = window.items ? window.items.find(function(c) { return c.id === item.itemId; }) : null;
-      if (catItem) dayRate = catItem.dayRate || 0;
-    }
-    var hourRate = dayRate / 24;
-    total += hourRate * (item.qty || 1) * (hours || 0);
-  });
-  return Math.round(total);
+function calcItemPrice(item, startStr, endStr) {
+  var qty = item.qty || 1;
+  var rate = item.dayRate;
+  var hourRate = item.hourRate;
+  if (rate === undefined) { // eski yozuv: joriy katalogdan
+    var t = item.toolId !== undefined ? tools.find(function(x) { return x.id === item.toolId; }) : null;
+    var c = item.itemId !== undefined && window.items ? window.items.find(function(x) { return x.id === item.itemId; }) : null;
+    rate = (t && t.dayRate) || (c && c.dayRate) || 0;
+    hourRate = (t && t.hourRate) || (c && c.hourRate) || 0;
+  }
+  var method = item.method || 'prop';
+  if (method === 'daily') {
+    var msD = new Date(endStr) - new Date(startStr);
+    var days = (isNaN(msD) || msD <= 0) ? 1 : Math.ceil(msD / 86400000);
+    return Math.round(rate * qty * days);
+  }
+  var ms = new Date(endStr) - new Date(startStr);
+  if (isNaN(ms) || ms < 0) ms = 0;
+  if (method === 'prop') return Math.round((rate / 24) * Math.max(1, ms / 3600000) * qty);
+  // hourly: birinchi soat to'liq, keyin har boshlangan yarim soat uchun yarim narx
+  var extra = Math.max(0, ms - 3600000);
+  return Math.round((hourRate + Math.ceil(extra / 1800000) * hourRate / 2) * qty);
 }
 
-function renderPriceRows(containerId, totalId, items, hours) {
+function calcRentalPrice(itemsList, startStr, endStr) {
+  var total = 0;
+  itemsList.forEach(function(item) { total += calcItemPrice(item, startStr, endStr); });
+  return total;
+}
+
+function renderPriceRows(containerId, totalId, items, startStr, endStr) {
   var rows = ''; var total = 0;
-  var globalItems = window.items; // global cars/items array (avoid shadowing by parameter name)
+  var methodNames = { prop: 'mutanosib', hourly: 'soatlik', daily: 'kunlik' };
   items.forEach(function(item) {
     var name = '';
-    var dayRate = 0;
     if (item.toolId !== undefined) {
       var tool = tools.find(function(t) { return t.id === item.toolId; });
       if (!tool) return;
       name = tool.name;
-      dayRate = tool.dayRate || 0;
     } else if (item.itemId !== undefined) {
-      var catItem = (globalItems || []).find(function(c) { return c.id === item.itemId; });
+      var catItem = (window.items || []).find(function(c) { return c.id === item.itemId; });
       if (!catItem) return;
-      name = catItem.plateNumber
-        ? (escHtml(catItem.plateNumber) + (catItem.brand ? ' ' + escHtml(catItem.brand) : ''))
-        : escHtml(catItem.name || '');
-      dayRate = catItem.dayRate || 0;
-    } else {
-      return;
-    }
-    var hourRate = dayRate / 24;
-    var sub = Math.round(hourRate * item.qty * (hours || 0));
+      name = catItem.plateNumber ? (catItem.plateNumber + (catItem.brand ? ' ' + catItem.brand : '')) : (catItem.name || '');
+    } else return;
+    var sub = calcItemPrice(item, startStr, endStr);
     total += sub;
     rows += '<div class="price-table-row">'
-      + '<span class="price-table-label">'+escHtml(name)+' &times; '+item.qty+' dona &times; '+fmtDuration(hours||0)+'</span>'
-      + '<span style="font-weight:600">'+fmt(sub)+'</span></div>';
+      + '<span class="price-table-label">' + escHtml(name) + ' &times; ' + item.qty + ' dona (' + (methodNames[item.method] || 'mutanosib') + ')</span>'
+      + '<span style="font-weight:600">' + fmt(sub) + '</span></div>';
   });
   document.getElementById(containerId).innerHTML = rows;
   document.getElementById(totalId).textContent = fmt(total);
@@ -1149,7 +1154,18 @@ function onPickerChange() {
       if (chk && qty) { qty.disabled = !chk.checked; qty.style.opacity = chk.checked ? '1' : '0.3'; }
     });
   }
-  renderPriceRows('price-rows', 'price-total', pickerItems, 1);
+  var st = document.getElementById('f-start').value;
+  renderPriceRows('price-rows', 'price-total', withPricing(pickerItems), st, st);
+}
+
+function withPricing(items) {
+  var method = document.getElementById('f-method').value;
+  return items.map(function(it) {
+    var t = it.toolId !== undefined ? tools.find(function(x) { return x.id === it.toolId; }) : null;
+    var c = it.itemId !== undefined ? (window.items || []).find(function(x) { return x.id === it.itemId; }) : null;
+    var src = t || c || {};
+    return Object.assign({}, it, { method: method, dayRate: src.dayRate || 0, hourRate: src.hourRate || 0 });
+  });
 }
 
 function getPickerItems() {
@@ -1249,7 +1265,7 @@ function saveRental() {
   var payment = document.getElementById('f-payment').value;
   var worker  = document.getElementById('f-worker').value;
   var note    = document.getElementById('f-note').value.trim();
-  var items   = getPickerItems();
+  var items   = withPricing(getPickerItems());
   var valid   = true;
   function setErr(field, msg) {
     var el = document.getElementById('err-'+field);
@@ -1478,9 +1494,9 @@ function getReturnItems() {
       var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
       qty = Math.min(qty, item.qty);
       if (item.itemId !== undefined) {
-        result.push({ itemId: item.itemId, qty: qty });
+        result.push({ itemId: item.itemId, qty: qty, method: item.method, dayRate: item.dayRate, hourRate: item.hourRate });
       } else {
-        result.push({ toolId: item.toolId, qty: qty });
+        result.push({ toolId: item.toolId, qty: qty, method: item.method, dayRate: item.dayRate, hourRate: item.hourRate });
       }
     }
   });
@@ -1499,7 +1515,7 @@ function updateReturnCalc() {
   if (!retDate) return;
   var hours = calcHours(r.start, retDate);
   var returnItems = getReturnItems();
-  renderPriceRows('return-price-rows', 'return-total', returnItems, hours);
+  renderPriceRows('return-price-rows', 'return-total', returnItems, r.start, retDate);
   var durEl = document.getElementById('return-duration');
   if (durEl) durEl.textContent = fmtDuration(hours);
 }
@@ -1518,7 +1534,7 @@ function confirmReturn() {
   var returnItems = getReturnItems();
   if (returnItems.length === 0) { showToast('Kamida bitta asbob tanlang', 'warning'); return; }
   var payment = document.getElementById('r-payment').value;
-  var price = calcRentalPrice(returnItems, hours);
+  var price = calcRentalPrice(returnItems, r.start, retDate);
 
   // returns arrayga qo'shish
   if (!r.returns) r.returns = [];
@@ -1612,10 +1628,12 @@ function openToolModal(id) {
     if (!t) return;
     document.getElementById('t-name').value = t.name;
     document.getElementById('t-day').value  = t.dayRate;
+    document.getElementById('t-hour').value = t.hourRate || 0;
     document.getElementById('t-qty').value  = t.qty;
   } else {
     document.getElementById('t-name').value = '';
     document.getElementById('t-day').value  = '';
+    document.getElementById('t-hour').value = '';
     document.getElementById('t-qty').value  = '1';
   }
   document.getElementById('tool-modal').classList.add('open');
@@ -1624,6 +1642,7 @@ function openToolModal(id) {
 function saveTool() {
   var name    = document.getElementById('t-name').value.trim();
   var dayRate = parseInt(document.getElementById('t-day').value) || 0;
+  var hourRate = parseInt(document.getElementById('t-hour').value) || 0;
   var qty     = parseInt(document.getElementById('t-qty').value) || 1;
   if (!name) {
     document.getElementById('err-tname').textContent = 'Asbob nomini kiriting!';
@@ -1632,10 +1651,10 @@ function saveTool() {
   }
   if (editToolId) {
     var idx = tools.findIndex(function(t) { return t.id === editToolId; });
-    tools[idx] = Object.assign({}, tools[idx], { name:name, dayRate:dayRate, qty:qty });
+    tools[idx] = Object.assign({}, tools[idx], { name:name, dayRate:dayRate, hourRate:hourRate, qty:qty });
     showToast('Asbob yangilandi', 'success');
   } else {
-    tools.push({ id:Date.now(), name:name, dayRate:dayRate, qty:qty });
+    tools.push({ id:Date.now(), name:name, dayRate:dayRate, hourRate:hourRate, qty:qty });
     showToast("Asbob qo'shildi", 'success');
   }
   saveTools(); closeModal('tool-modal'); renderTools(); renderAll();
@@ -2781,3 +2800,52 @@ function scrollMainBy(amount) {
   }
 }
 
+/* ===== QO'LDA JOYLASHUV: Google Maps havolasi yoki koordinata ===== */
+function parseMapsInput(input) {
+  var s = (input || '').trim();
+  if (!s) return null;
+  var m = s.match(/^(-?\d{1,3}(?:\.\d+)?)[,\s]+(-?\d{1,3}(?:\.\d+)?)$/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  m = s.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/)
+   || s.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/)
+   || s.match(/[?&](?:q|ll|center)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  return null;
+}
+
+function saveManualLocation() {
+  var status = document.getElementById('settings-location-status');
+  var raw = (document.getElementById('settings-location-input').value || '').trim();
+  var p = parseMapsInput(raw);
+  if (!p || isNaN(p.lat) || isNaN(p.lng) || Math.abs(p.lat) > 90 || Math.abs(p.lng) > 180) {
+    if (status) status.textContent = raw.indexOf('goo.gl') !== -1
+      ? "Qisqa havolani o'qib bo'lmaydi. Havolani brauzerda oching, manzil satridagi to'liq havolani nusxalab qo'ying yoki koordinatani yozing."
+      : "Noto'g'ri format. Masalan: 41.2995, 69.2401";
+    return;
+  }
+  var lat = p.lat.toFixed(6);
+  var lng = p.lng.toFixed(6);
+  var mapUrl = /^https?:\/\//.test(raw) ? raw : ('https://www.google.com/maps?q=' + lat + ',' + lng);
+  if (status) status.textContent = '📡 Manzil aniqlanmoqda...';
+
+  function finish(addr) {
+    var users = getUsers();
+    if (!users[currentUser]) { if (status) status.textContent = 'Foydalanuvchi topilmadi'; return; }
+    users[currentUser].locationLat = lat;
+    users[currentUser].locationLng = lng;
+    users[currentUser].locationAddress = addr;
+    users[currentUser].locationMapUrl = mapUrl;
+    users[currentUser].locationLocked = true;
+    saveUsers(users);
+    updateUserLocationDisplay();
+    var linkEl = document.getElementById('settings-location-link');
+    if (linkEl) { linkEl.href = mapUrl; linkEl.style.display = 'inline-block'; }
+    if (status) status.textContent = '✅ Joylashuv saqlandi!';
+  }
+
+  fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng)
+    .then(function(r) { return r.json(); })
+    .then(function(d) { return d.display_name || (lat + ', ' + lng); })
+    .catch(function() { return lat + ', ' + lng; })
+    .then(finish);
+}

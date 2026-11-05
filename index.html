@@ -439,6 +439,11 @@
               <label>📍 Do'kon joylashuvi</label>
               <div id="settings-location" style="color:var(--muted);font-size:13px;margin-bottom:8px">—</div>
               <iframe id="settings-location-map" style="width:100%;height:200px;border-radius:12px;border:1px solid var(--border);display:none" loading="lazy"></iframe>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <input type="text" id="settings-location-input" placeholder="Google Maps havolasi yoki: 41.2995, 69.2401" style="flex:1;min-width:200px">
+                <button class="btn btn-primary" onclick="saveManualLocation()">Saqlash</button>
+              </div>
+              <a id="settings-location-link" href="#" target="_blank" rel="noopener" style="display:none;font-size:12px;color:var(--accent);margin-top:6px">Google Maps'da ochish ↗</a>
               <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
                 <button class="btn btn-ghost" onclick="detectAndUpdateLocation()">📍 Joylashuvni yangilash</button>
               </div>
@@ -499,7 +504,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Boshlanish vaqti</label>
-          <input type="datetime-local" id="f-start">
+          <input type="datetime-local" id="f-start" onchange="onPickerChange()">
           <span class="field-error" id="err-start"></span>
         </div>
         <div class="form-group">
@@ -521,6 +526,14 @@
         </div>
       </div>
       <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>Hisoblash usuli</label>
+          <select id="f-method" onchange="onPickerChange()">
+            <option value="prop">Mutanosib (kunlik ÷ 24 × soat)</option>
+            <option value="hourly">Soatlik</option>
+            <option value="daily">Kunlik (qat'iy)</option>
+          </select>
+        </div>
         <div class="form-group">
           <label>To'lov holati</label>
           <select id="f-payment">
@@ -612,6 +625,10 @@
         <div class="form-group">
           <label>Kunlik narx (so'm)</label>
           <input type="number" id="t-day" placeholder="25000" min="0">
+        </div>
+        <div class="form-group">
+          <label>Soatlik narx (so'm)</label>
+          <input type="number" id="t-hour" placeholder="10000" min="0">
         </div>
         <div class="form-group">
           <label>Umumiy miqdor (dona)</label>
