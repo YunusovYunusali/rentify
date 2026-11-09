@@ -385,6 +385,10 @@
         <button class="btn btn-danger" onclick="resetReport()">&#8635; Hisobotni tozalash</button>
       </div>
       <div class="page-sub">Daromad va to'lovlar tahlili</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0">
+        <select id="report-month" style="width:auto;min-width:160px"></select>
+        <button class="btn btn-primary" onclick="exportMonthlyXlsx()">⬇ Excel (oylik)</button>
+      </div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Jami daromad</div><div class="stat-value green" id="r-total">0 so'm</div></div>
         <div class="stat-card"><div class="stat-label">To'langan</div><div class="stat-value blue" id="r-paid">0 so'm</div></div>
@@ -394,6 +398,10 @@
       <div class="report-row">
         <div class="report-card"><div class="report-card-title">Eng ko'p ijaralangan asboblar</div><div id="top-tools">—</div></div>
         <div class="report-card"><div class="report-card-title">So'nggi to'lovlar</div><div id="recent-payments">—</div></div>
+        <div class="report-card" style="cursor:pointer" onclick="openDebtors()">
+          <div class="report-card-title">Qarzdorlar →</div>
+          <div id="debtors-summary">—</div>
+        </div>
       </div>
       <div class="table-card" style="margin-top:4px">
         <div class="table-header">
@@ -543,7 +551,7 @@
         </div>
         <div class="form-group">
           <label>Izoh (ixtiyoriy)</label>
-          <input type="text" id="f-note" placeholder="...">
+          <input type="text" id="f-note" placeholder="Masalan: zalog — prava (asl nusxa)">
         </div>
       </div>
     </div>
@@ -784,6 +792,18 @@
 </div>
 
 <!-- CHEK MODAL -->
+<div class="modal-overlay" id="debtors-modal">
+  <div class="modal" style="width:640px">
+    <div class="modal-head"><h3>Qarzdorlar</h3><button class="close-btn" onclick="closeModal('debtors-modal')">&#215;</button></div>
+    <div class="modal-body"><div id="debtors-content"></div></div>
+  </div>
+</div>
+<div class="modal-overlay" id="debtor-detail-modal">
+  <div class="modal" style="width:760px">
+    <div class="modal-head"><h3 id="debtor-detail-title">Mijoz</h3><button class="close-btn" onclick="closeModal('debtor-detail-modal')">&#215;</button></div>
+    <div class="modal-body"><div id="debtor-detail-content"></div></div>
+  </div>
+</div>
 <div class="modal-overlay" id="check-modal">
   <div class="modal" style="width:420px">
     <div class="modal-head">
@@ -816,6 +836,7 @@
   window.db = firebase.firestore();
   window.firebaseStorage = firebase.storage();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </div><!-- /app -->
 

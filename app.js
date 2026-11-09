@@ -850,11 +850,14 @@ function markDailyReportShown() {
 function showDailyReportIfNeeded() {
   if (!currentUser || !DB_PREFIX) return;
   if (!shouldShowDailyReport()) return;
-  var todayIncome = analyzeIncome('today');
-  var activeCount = analyzeActiveRentals().count;
-  var debtorsCount = analyzeDebtors().length;
-  var msg = '?? Bugungi avtomatik hisobot: Daromad ' + fmt(todayIncome) + ', faol ijaralar ' + activeCount + ', qarzdorlar ' + debtorsCount + '.';
-  showToast && showToast(msg, 'success');
+  var today = new Date().toDateString();
+  var todayIncome = rentals
+    .filter(function(r) { return r.payment === 'paid' && r.paidAt && new Date(r.paidAt).toDateString() === today; })
+    .reduce(function(s, r) { return s + (r.price || 0); }, 0);
+  var activeCount = rentals.filter(function(r) { return r.status === 'active'; }).length;
+  var debtorsCount = rentals.filter(function(r) { return r.payment === 'unpaid' && (r.price || 0) > 0; }).length;
+  var msg = '📊 Bugungi avtomatik hisobot: Daromad ' + fmt(todayIncome) + ', faol ijaralar ' + activeCount + ', qarzdorlar ' + debtorsCount + '.';
+  if (typeof showToast === 'function') showToast(msg, 'success');
   markDailyReportShown();
 }
 
@@ -1758,7 +1761,7 @@ function renderDashboard() {
     .filter(function(r) { return r.payment==='paid' && r.paidAt && new Date(r.paidAt).toDateString()===today; })
     .reduce(function(s,r) { return s+r.price; }, 0);
   var unpaidTotal = rentals
-    .filter(function(r) { return r.payment==='unpaid' && r.status==='returned'; })
+    .filter(function(r) { return r.payment==='unpaid'; })
     .reduce(function(s,r) { return s+r.price; }, 0);
 
   document.getElementById('stat-active').textContent = active.length;
@@ -1886,6 +1889,7 @@ function renderRentalCard(r, dashboardMode) {
     + statusBadge(r.status)
     + '</div>'
     + '<div class="rc-items">'+itemsLabel(r.items)+'</div>'
+    + (r.note ? '<div class="rc-note">📝 '+escHtml(r.note)+'</div>' : '')
     + '<div class="rc-footer">'
     + '<span class="rc-date">'+dateInfo+'</span>'
     + priceHtml
@@ -1954,9 +1958,9 @@ function renderTools() {
 
 /* ===== RENDER REPORT ===== */
 function renderReport() {
-  var total = rentals.filter(function(r){return r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
-  var paid  = rentals.filter(function(r){return r.payment==='paid'&&r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
-  var debt  = rentals.filter(function(r){return r.payment==='unpaid'&&r.status==='returned';}).reduce(function(s,r){return s+r.price;},0);
+  var total = rentals.reduce(function(s, r) { return s + (r.price || 0); }, 0);
+  var paid  = rentals.filter(function(r) { return r.payment === 'paid'; }).reduce(function(s, r) { return s + (r.price || 0); }, 0);
+  var debt  = rentals.filter(function(r) { return r.payment === 'unpaid'; }).reduce(function(s, r) { return s + (r.price || 0); }, 0);
   document.getElementById('r-total').textContent = fmt(total);
   document.getElementById('r-paid').textContent  = fmt(paid);
   document.getElementById('r-debt').textContent  = fmt(debt);
@@ -1982,6 +1986,8 @@ function renderReport() {
     : '<div style="color:var(--muted);font-size:13px;padding:8px 0">To\'lov yo\'q</div>';
 
   renderWeeklyReport();
+  fillMonthOptions();
+  updateDebtorsSummary();
 }
 
 function renderWeeklyReport() {
@@ -1991,28 +1997,21 @@ function renderWeeklyReport() {
   // Foydalanuvchi hisobga kirgan kunni aniqlash
   var users = getUsers();
   var userInfo = currentUser && users[currentUser] ? users[currentUser] : null;
-  var startDate;
-  if (userInfo && userInfo.createdAt) {
-    startDate = new Date(userInfo.createdAt);
-    startDate.setHours(0,0,0,0);
-  } else {
-    // Fallback: bugundan 6 kun oldin
-    startDate = new Date();
-    startDate.setDate(startDate.getDate() - 6);
-    startDate.setHours(0,0,0,0);
-  }
-
-  // Bugundan boshlab 7 kun oralig'ini hisoblash
-  // startDate dan bugunga qadar, lekin max 7 kun
   var now = new Date();
-  now.setHours(0,0,0,0);
+  now.setHours(0, 0, 0, 0);
+  var first = new Date(now);
+  first.setDate(first.getDate() - 6);
+  if (userInfo && userInfo.createdAt) {
+    var created = new Date(userInfo.createdAt);
+    created.setHours(0, 0, 0, 0);
+    if (created > first) first = created;
+  }
   var days = [];
-  var d = new Date(startDate);
-  while (d <= now && days.length < 7) {
+  var d = new Date(first);
+  while (d <= now) {
     days.push(new Date(d));
     d.setDate(d.getDate() + 1);
   }
-  // Agar 7 kundan kam bo'lsa, bugunni ham qo'sh
   if (days.length === 0) days.push(new Date(now));
 
   var rows = days.map(function(day) {
@@ -2046,12 +2045,12 @@ function renderWeeklyReport() {
     var rowStyle = isToday ? ' style="background:rgba(245,166,35,0.07)"' : '';
 
     return '<tr'+rowStyle+'>'
-      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun пїЅ ':'')+label+'</span></td>'
+      + '<td><span style="font-weight:500'+(isToday?';color:var(--accent)':'')+'\">'+(isToday?'Bugun · ':'')+label+'</span></td>'
       + '<td style="text-align:center">'+started.length+'</td>'
       + '<td style="text-align:center">'+returned.length+'</td>'
-      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'пїЅ')+'</td>'
-      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'пїЅ')+'</td>'
-      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'пїЅ')+'</td>'
+      + '<td style="color:var(--green);font-weight:600">'+(income>0?fmt(income):'—')+'</td>'
+      + '<td style="color:var(--blue)">'+(paidAmt>0?fmt(paidAmt):'—')+'</td>'
+      + '<td style="color:var(--red)">'+(debtAmt>0?fmt(debtAmt):'—')+'</td>'
       + '</tr>';
   });
   tbody.innerHTML = rows.join('');
@@ -2848,4 +2847,159 @@ function saveManualLocation() {
     .then(function(d) { return d.display_name || (lat + ', ' + lng); })
     .catch(function() { return lat + ', ' + lng; })
     .then(finish);
+}
+
+/* ===== QARZDORLAR ===== */
+var debtorsCache = [];
+
+function getDebtors() {
+  var map = Object.create(null);
+  rentals.forEach(function(r) {
+    if (r.payment !== 'unpaid' || !(r.price > 0)) return;
+    var phone = (r.phone || '').trim();
+    var name = (r.name || '').trim() || "noma'lum";
+    var key = phone ? 'phone:' + phone : 'name:' + name;
+    if (!map[key]) map[key] = { key: key, name: r.name || '—', phone: r.phone || '', total: 0, rentals: [] };
+    map[key].total += r.price;
+    map[key].rentals.push(r);
+  });
+  return Object.values(map).sort(function(a, b) { return b.total - a.total; });
+}
+
+function updateDebtorsSummary() {
+  var el = document.getElementById('debtors-summary');
+  if (!el) return;
+  debtorsCache = getDebtors();
+  var sum = debtorsCache.reduce(function(s, d) { return s + d.total; }, 0);
+  el.innerHTML = debtorsCache.length
+    ? '<span style="color:var(--red);font-weight:600">' + fmt(sum) + '</span><br><span style="font-size:12px;color:var(--muted)">' + debtorsCache.length + ' ta mijoz</span>'
+    : '<span style="color:var(--muted);font-size:13px">Qarzdor yo\'q</span>';
+}
+
+function renderDebtorsList() {
+  debtorsCache = getDebtors();
+  var el = document.getElementById('debtors-content');
+  if (!debtorsCache.length) {
+    el.innerHTML = '<div class="empty" style="padding:24px">Qarzdor mijoz yo\'q</div>';
+    return;
+  }
+  el.innerHTML = debtorsCache.map(function(d, i) {
+    return '<div style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)" onclick="openDebtorDetail(' + i + ')">'
+      + '<div><div style="font-weight:600">' + escHtml(d.name) + '</div>'
+      + '<div style="font-size:12px;color:var(--muted)">' + escHtml(d.phone || 'Telefon yo\'q') + ' · ' + d.rentals.length + ' ta ijara</div></div>'
+      + '<div style="color:var(--red);font-weight:600">' + fmt(d.total) + '</div></div>';
+  }).join('');
+}
+
+function openDebtors() {
+  renderDebtorsList();
+  document.getElementById('debtors-modal').classList.add('open');
+}
+
+function renderDebtorDetail(i) {
+  var d = debtorsCache[i];
+  if (!d) return;
+  var rows = d.rentals.slice().sort(function(a, b) { return new Date(b.start) - new Date(a.start); })
+    .map(function(r) {
+      return '<tr>'
+        + '<td>' + fmtDate(r.start) + '</td>'
+        + '<td>' + (r.returnedAt ? fmtDate(r.returnedAt) : '—') + '</td>'
+        + '<td>' + escHtml(itemsLabel(r.items)) + '</td>'
+        + '<td>' + (r.status === 'returned' ? 'Qaytarilgan' : 'Faol') + '</td>'
+        + '<td style="font-weight:600;color:var(--red)">' + fmt(r.price) + '</td>'
+        + '<td><button class="btn btn-primary btn-sm" onclick="markDebtorPaid(' + i + ',' + r.id + ')">To\'landi</button></td>'
+        + '</tr>';
+    }).join('');
+
+  document.getElementById('debtor-detail-title').textContent = d.name;
+  document.getElementById('debtor-detail-content').innerHTML =
+    '<div style="margin-bottom:14px;font-size:13px">'
+    + (d.phone ? '<a href="tel:' + escHtml(d.phone) + '" style="color:var(--accent)">📞 ' + escHtml(d.phone) + '</a>' : '<span style="color:var(--muted)">Telefon yo\'q</span>')
+    + '<div style="margin-top:6px">Jami qarz: <strong style="color:var(--red)">' + fmt(d.total) + '</strong></div></div>'
+    + '<div style="overflow-x:auto"><table style="width:100%;font-size:13px">'
+    + '<thead><tr><th>Boshlangan</th><th>Qaytarilgan</th><th>Asboblar</th><th>Holat</th><th>Summa</th><th></th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table></div>';
+}
+
+function openDebtorDetail(i) {
+  if (!debtorsCache[i]) return;
+  renderDebtorDetail(i);
+  document.getElementById('debtor-detail-modal').classList.add('open');
+}
+
+function markDebtorPaid(i, rid) {
+  var key = debtorsCache[i] && debtorsCache[i].key;
+  togglePayment(rid); // saqlaydi va renderAll() ni chaqiradi
+  debtorsCache = getDebtors();
+  renderDebtorsList();
+  updateDebtorsSummary();
+  var ni = debtorsCache.findIndex(function(d) { return d.key === key; });
+  if (ni === -1) {
+    closeModal('debtor-detail-modal'); // mijozning qarzi tugadi
+  } else {
+    renderDebtorDetail(ni);
+  }
+}
+
+/* ===== OYLIK HISOBOT (Excel) ===== */
+function exportMonthlyXlsx() {
+  var m = document.getElementById('report-month').value;
+  if (!m) { showToast("Avval oyni tanlang", 'warning'); return; }
+  if (typeof XLSX === 'undefined') { showToast("Excel kutubxonasi yuklanmadi", 'warning'); return; }
+
+  var rows = rentals.filter(function(r) { return r.start && r.start.slice(0, 7) === m; });
+  if (!rows.length) { showToast("Bu oyda ijara yo'q", 'warning'); return; }
+
+  var header = ['Boshlangan', 'Qaytarilgan', 'Mijoz', 'Telefon', 'Asboblar', 'Holat', "To'lov holati", "Summa (so'm)", 'Ishchi', 'Izoh'];
+  var data = [header];
+  var total = 0, paid = 0, debt = 0;
+
+  rows.forEach(function(r) {
+    var price = r.price || 0;
+    total += price;
+    if (r.payment === 'paid') paid += price; else debt += price;
+    data.push([
+      r.start.replace('T', ' '),
+      r.returnedAt ? r.returnedAt.replace('T', ' ') : '',
+      r.name || '',
+      r.phone || '',
+      itemsLabel(r.items),
+      r.status === 'returned' ? 'Qaytarilgan' : 'Faol',
+      r.payment === 'paid' ? "To'langan" : "To'lanmagan",
+      price,
+      r.worker || '',
+      r.note || ''
+    ]);
+  });
+
+  data.push([]);
+  data.push(['Jami daromad', '', '', '', '', '', '', total]);
+  data.push(["To'langan", '', '', '', '', '', '', paid]);
+  data.push(['Qarz', '', '', '', '', '', '', debt]);
+
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [
+    { wch: 17 }, { wch: 17 }, { wch: 20 }, { wch: 14 }, { wch: 32 },
+    { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 30 }
+  ];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, m);
+  XLSX.writeFile(wb, 'ijara-hisobot-' + m + '.xlsx');
+}
+
+/* ===== OY TANLASH RO'YXATI ===== */
+var UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+
+function fillMonthOptions() {
+  var sel = document.getElementById('report-month');
+  if (!sel || sel.options.length) return;
+  var now = new Date();
+  for (var i = 0; i < 24; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var opt = document.createElement('option');
+    opt.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    opt.textContent = UZ_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    sel.appendChild(opt);
+  }
+  sel.selectedIndex = 0;
 }

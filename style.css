@@ -321,6 +321,7 @@ select option{background:var(--surface2);}
 .rc-actions .btn{flex:1;justify-content:center;min-height:44px;}
 .rc-pay-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px;}
 .rc-pay-label{font-size:12px;color:var(--muted);}
+.rc-note{font-size:12px;color:var(--accent);margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(245,166,35,0.08);line-height:1.4;}
 
 /* ===== MOBILE TOOL CARD ===== */
 .tool-card-mobile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
