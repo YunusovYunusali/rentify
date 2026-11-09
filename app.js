@@ -1830,7 +1830,7 @@ function renderAllTable() {
     tbody.innerHTML = filtered.map(function(r) {
       var priceCell = r.status==='returned' ? fmt(r.price) : '<span style="color:var(--accent);font-size:12px">Qaytarishda</span>';
       return '<tr>'
-        + '<td><div class="td-name">'+escHtml(r.name)+'</div></td>'
+        + '<td><div class="td-name">'+escHtml(r.name)+'</div>'+(r.note ? '<div class="rc-note" style="margin-top:4px">📝 '+escHtml(r.note)+'</div>' : '')+'</td>'
         + '<td>'+escHtml(r.phone)+'</td>'
         + '<td>'+itemsTags(r.items, r.returns)+'</td>'
         + '<td>'+fmtDate(r.start)+'</td>'
@@ -2143,12 +2143,11 @@ function openCheck(id) {
       }
     }
 
-    var hours = r.hours || 0;
-    var hourRate = dayRate / 24;
-    var sub = Math.round(hourRate * qty * hours);
+    var methodText = { prop: 'mutanosib', hourly: 'soatlik', daily: 'kunlik' }[item.method || 'prop'];
+    var sub = calcItemPrice(item, r.start, r.returnedAt || new Date().toISOString());
 
     return '<tr>'
-      + '<td style="padding:6px 0;border-bottom:1px dashed #ddd">'+name+'</td>'
+      + '<td style="padding:6px 0;border-bottom:1px dashed #ddd">'+name+'<br><span style="font-size:11px">'+methodText+'</span></td>'
       + '<td style="padding:6px 0;border-bottom:1px dashed #ddd;text-align:center">'+qty+' dona</td>'
       + '<td style="padding:6px 0;border-bottom:1px dashed #ddd;text-align:right">'+Number(dayRate).toLocaleString()+'</td>'
       + '<td style="padding:6px 0;border-bottom:1px dashed #ddd;text-align:right;font-weight:600">'+Number(sub).toLocaleString()+'</td>'
