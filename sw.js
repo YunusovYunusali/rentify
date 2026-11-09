@@ -1,4 +1,4 @@
-const CACHE_NAME = 'buildzone-v2';
+const CACHE_NAME = 'rentify-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -15,7 +15,9 @@ const ASSETS = [
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(ASSETS);
+      return Promise.all(ASSETS.map(function(url) {
+        return cache.add(url).catch(function(err) { console.warn('Cache: ' + url, err); });
+      }));
     })
   );
   self.skipWaiting();
